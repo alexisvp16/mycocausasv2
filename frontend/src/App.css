@@ -2747,45 +2747,7 @@
   color: var(--text-muted);
 }
 
-/* Demo Credentials */
-.demo-credentials-box {
-  background: rgba(0, 245, 160, 0.05);
-  border: 1px dashed var(--border-bio);
-  border-radius: 6px;
-  padding: 12px;
-  margin-top: 10px;
-}
 
-.demo-title {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text-bio);
-  margin-bottom: 8px;
-}
-
-.demo-buttons-row {
-  display: flex;
-  gap: 8px;
-}
-
-.demo-btn {
-  flex: 1;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--border-subtle);
-  border-radius: 4px;
-  padding: 6px 10px;
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.demo-btn:hover {
-  border-color: var(--neon-emerald);
-  color: #ffffff;
-}
 
 /* Security Footer */
 .login-security-footer {

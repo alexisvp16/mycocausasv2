@@ -113,13 +113,6 @@ export default function LoginPage() {
     }
   }
 
-  const fillDemoCredentials = (demoEmail, demoPass) => {
-    setEmail(demoEmail)
-    setPassword(demoPass)
-    setClientErrors([])
-    setError('')
-  }
-
   return (
     <div className="login-page-wrapper">
       <div className="login-card-container">
@@ -280,33 +273,6 @@ export default function LoginPage() {
                 'Ingresar al Portal ↗'
               )}
             </button>
-
-            {/* Quick Demo Access Bar */}
-            <div className="demo-credentials-box">
-              <span className="demo-title">
-                ⚡ Credenciales Demo de prueba rápida:
-              </span>
-              <div className="demo-buttons-row">
-                <button
-                  type="button"
-                  className="demo-btn admin"
-                  onClick={() =>
-                    fillDemoCredentials('admin@mycocausas.pe', 'Admin2026!*')
-                  }
-                >
-                  Administradora Lab
-                </button>
-                <button
-                  type="button"
-                  className="demo-btn client"
-                  onClick={() =>
-                    fillDemoCredentials('cliente@mycocausas.pe', 'Cliente123!*')
-                  }
-                >
-                  Cliente Investigador
-                </button>
-              </div>
-            </div>
           </form>
         )}
 

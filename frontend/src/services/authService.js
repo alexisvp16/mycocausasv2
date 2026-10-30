@@ -14,30 +14,6 @@ import { API_BASE_URL } from './apiConfig'
 const SESSION_STORAGE_KEY = 'myco_auth_session'
 const SESSION_MAX_IDLE_MINUTES = 30
 
-/**
- * Usuarios demo precargados para pruebas de desarrollo seguro
- */
-const DEMO_USERS = [
-  {
-    id: 1,
-    name: 'Dra. Elena Ramos (Admin Lab)',
-    email: 'admin@mycocausas.pe',
-    passwordHash: 'Admin2026!*',
-    role: 'admin',
-    lastLogin: '2026-10-28 22:30:00',
-    batchAccess: 'ALL',
-  },
-  {
-    id: 2,
-    name: 'Carlos Mendoza (Investigador)',
-    email: 'cliente@mycocausas.pe',
-    passwordHash: 'Cliente123!*',
-    role: 'client',
-    lastLogin: '2026-10-27 15:45:00',
-    batchAccess: 'MYCO-LION-26B',
-  },
-]
-
 export const authService = {
   /**
    * Obtiene la sesión activa verificando vigencia e inactividad
@@ -141,23 +117,7 @@ export const authService = {
       if (response.status === 429) {
         throw new Error(data.message || 'Acceso bloqueado por seguridad temporalmente.')
       }
-      if (response.status === 401 || response.status === 403) {
-        throw new Error(data.message || 'Credenciales incorrectas.')
-      }
-    } catch (networkOrAuthError) {
-      // Si fue un error explícito de credenciales o bloqueo retornado por el backend, lanzarlo directamente
-      if (networkOrAuthError.message && !networkOrAuthError.message.includes('Failed to fetch')) {
-        throw networkOrAuthError
-      }
-      // Solo si el backend está totalmente apagado (Failed to fetch), recurre a demo
-    }
 
-    // 4. Validación local controlada (Demo biotecnológica)
-    const matchedUser = DEMO_USERS.find(
-      (u) => u.email === cleanEmail && u.passwordHash === password
-    )
-
-    if (!matchedUser) {
       registerFailedAttempt()
       const updatedStatus = checkLockoutStatus()
       if (updatedStatus.isLocked) {
@@ -165,27 +125,13 @@ export const authService = {
           `Credenciales inválidas. Cuenta bloqueada temporalmente por ${updatedStatus.secondsRemaining} segundos.`
         )
       }
-      throw new Error(
-        `Credenciales incorrectas. Te quedan ${
-          5 - updatedStatus.attempts
-        } intentos antes del bloqueo de seguridad.`
-      )
+      throw new Error(data.message || 'Credenciales incorrectas.')
+    } catch (networkOrAuthError) {
+      if (networkOrAuthError.message && !networkOrAuthError.message.includes('Failed to fetch')) {
+        throw networkOrAuthError
+      }
+      throw new Error('Error al conectar con el servidor de autenticación.')
     }
-
-    // Credenciales correctas: reiniciar contador de fallos
-    resetSecurityState()
-
-    const sanitizedUser = {
-      id: matchedUser.id,
-      name: matchedUser.name,
-      email: matchedUser.email,
-      role: matchedUser.role,
-      lastLogin: new Date().toISOString(),
-      batchAccess: matchedUser.batchAccess,
-    }
-
-    const mockJwt = `myco_sec_token_${btoa(cleanEmail)}_${Date.now()}`
-    return this.setSession(sanitizedUser, mockJwt)
   },
 
   /**
