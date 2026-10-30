@@ -263,7 +263,7 @@ export const adminService = {
   async saveProduct(productData) {
     const products = this.getProducts()
     let updated
-    const isEdit = Boolean(productData.id && typeof productData.id === 'number')
+    const isEdit = Boolean(productData.id && typeof productData.id === 'number' && productData.id < 1000000000)
 
     if (isEdit) {
       try {
@@ -327,9 +327,11 @@ export const adminService = {
         const json = await res.json()
         if (json.success && json.id) {
           createdId = json.id
+        } else {
+          console.error('Error al registrar producto en backend:', json)
         }
       } catch (err) {
-        console.warn('Error al registrar producto en backend:', err)
+        console.error('Error al registrar producto en backend:', err)
       }
 
       const newProduct = {

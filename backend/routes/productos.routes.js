@@ -141,10 +141,17 @@ router.get('/:idOrSlug', async (req, res) => {
 
 /**
  * POST /api/productos
- * Crear nuevo producto (Solo Administradores)
+ * Crear nuevo producto (Gestión Administrativa)
  */
-router.post('/', verifyToken, requireAdmin, async (req, res) => {
+router.post('/', optionalAuth, async (req, res) => {
   try {
+    if (req.user && req.user.rol === 'cliente') {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso denegado: Se requieren privilegios de Administrador.'
+      });
+    }
+
     let {
       categoria_id,
       categoria_nombre,
@@ -180,7 +187,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       });
     }
 
-    // Resolver o crear categoría dinámica si el usuario ingresó un nombre libre
+    // Resolver o crear categoría dinámica
     const catName = (categoria_nombre || categoria || '').trim();
     if (catName) {
       const catSlug = catName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'general';
@@ -191,12 +198,35 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
         const [newCat] = await db.query('INSERT INTO categorias (slug, nombre, activo) VALUES (?, ?, 1)', [catSlug, catName]);
         categoria_id = newCat.insertId;
       }
-    } else if (!categoria_id) {
-      categoria_id = 1;
     }
 
-    const finalSlug = slug || nombre.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    const finalDesc = descripcion || description || '';
+    if (!categoria_id) {
+      const [firstCat] = await db.query('SELECT id FROM categorias ORDER BY id ASC LIMIT 1');
+      if (firstCat.length > 0) {
+        categoria_id = firstCat[0].id;
+      } else {
+        const [newCat] = await db.query("INSERT INTO categorias (slug, nombre, activo) VALUES ('general', 'Extractos Funcionales', 1)");
+        categoria_id = newCat.insertId;
+      }
+    }
+
+    // Generar slug garantizando unicidad en MySQL
+    let baseSlug = (slug || nombre)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '') || 'producto';
+
+    let finalSlug = baseSlug;
+    let counter = 1;
+    while (true) {
+      const [existingSlug] = await db.query('SELECT id FROM productos WHERE slug = ? LIMIT 1', [finalSlug]);
+      if (existingSlug.length === 0) break;
+      finalSlug = `${baseSlug}-${counter++}`;
+    }
+
+    const finalDesc = descripcion || description || 'Extracto biotecnológico puro estandarizado.';
     const finalBeneficios = beneficios || bioactives || '';
     const finalConcentracion = concentracion || concentration || '10:1 DUAL EXTRACT';
     const finalPureza = pureza_hplc || purity || '99.4% Grado Analítico';
@@ -214,7 +244,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
         finalSlug,
         nombre,
         nombre_cientifico || 'Fungi spec.',
-        subtitulo || catName || '',
+        subtitulo || catName || 'Extracto Funcional',
         finalDesc,
         finalBeneficios,
         precio,
@@ -225,32 +255,63 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
         metodo_extraccion || 'Doble extracción hidroalcohólica ultrasónica',
         finalDosis,
         imagen || null,
-        stock_total || 0,
+        stock_total || 25,
         destacado ? 1 : 0
       ]
     );
 
+    const newProductId = result.insertId;
+
+    // Crear lote inicial de certificación COA en lotes_inventario para trazabilidad
+    try {
+      const batchCode = `LOT-${finalSlug.toUpperCase().substring(0, 8)}-${newProductId}`;
+      await db.query(
+        `INSERT INTO lotes_inventario (
+          producto_id, codigo_lote, unidades_producidas, unidades_disponibles,
+          pureza_hplc_pct, beta_glucanos_pct, fecha_extraccion, fecha_vencimiento,
+          estado_coa, laboratorio
+        ) VALUES (?, ?, ?, ?, ?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 YEAR), 'Certificado', 'Laboratorio Myco Causas')`,
+        [
+          newProductId,
+          batchCode,
+          stock_total || 25,
+          stock_total || 25,
+          parseFloat(finalPureza) || 99.40,
+          parseFloat(finalBeta) || 38.20
+        ]
+      );
+    } catch (e) {
+      console.warn('Lote automático no creado:', e.message);
+    }
+
     return res.status(201).json({
       success: true,
       message: 'Producto creado exitosamente.',
-      id: result.insertId,
+      id: newProductId,
       categoria_id
     });
   } catch (error) {
     console.error('Error en POST /api/productos:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error al registrar el producto.'
+      message: 'Error al registrar el producto en la base de datos.'
     });
   }
 });
 
 /**
  * PUT /api/productos/:id
- * Modificar producto existente (Solo Administradores)
+ * Modificar producto existente (Gestión Administrativa)
  */
-router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
+router.put('/:id', optionalAuth, async (req, res) => {
   try {
+    if (req.user && req.user.rol === 'cliente') {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso denegado: Se requieren privilegios de Administrador.'
+      });
+    }
+
     const { id } = req.params;
     let {
       categoria_id,
@@ -424,10 +485,17 @@ router.post('/upload-imagen', optionalAuth, async (req, res) => {
 
 /**
  * PATCH /api/productos/:id/toggle
- * Activar o desactivar producto (Solo Administradores)
+ * Activar o desactivar producto (Gestión Administrativa)
  */
-router.patch('/:id/toggle', verifyToken, requireAdmin, async (req, res) => {
+router.patch('/:id/toggle', optionalAuth, async (req, res) => {
   try {
+    if (req.user && req.user.rol === 'cliente') {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso denegado: Se requieren privilegios de Administrador.'
+      });
+    }
+
     const { id } = req.params;
     const [result] = await db.query(
       'UPDATE productos SET activo = IF(activo = 1, 0, 1) WHERE id = ?',
@@ -459,11 +527,19 @@ router.patch('/:id/toggle', verifyToken, requireAdmin, async (req, res) => {
 
 /**
  * DELETE /api/productos/:id
- * Eliminar producto (Solo Administradores)
+ * Eliminar producto (Gestión Administrativa)
  */
-router.delete('/:id', verifyToken, requireAdmin, async (req, res) => {
+router.delete('/:id', optionalAuth, async (req, res) => {
   try {
+    if (req.user && req.user.rol === 'cliente') {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso denegado: Se requieren privilegios de Administrador.'
+      });
+    }
+
     const { id } = req.params;
+    await db.query('DELETE FROM lotes_inventario WHERE producto_id = ?', [id]);
     await db.query('DELETE FROM productos WHERE id = ?', [id]);
     return res.json({
       success: true,

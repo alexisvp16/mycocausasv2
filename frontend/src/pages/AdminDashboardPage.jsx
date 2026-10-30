@@ -57,19 +57,19 @@ export default function AdminDashboardPage() {
   const handleSaveProduct = async (productData) => {
     const updated = await adminService.saveProduct(productData)
     setProducts(updated)
-    syncWithBackend()
+    await syncWithBackend()
   }
 
   const handleDeleteProduct = async (productId) => {
     const updated = await adminService.deleteProduct(productId)
     setProducts(updated)
-    syncWithBackend()
+    await syncWithBackend()
   }
 
   const handleToggleProductActive = async (productId) => {
     const updated = await adminService.toggleProductActive(productId)
     setProducts(updated)
-    syncWithBackend()
+    await syncWithBackend()
   }
 
   const handleUpdateBatchStock = (batchCode, delta) => {

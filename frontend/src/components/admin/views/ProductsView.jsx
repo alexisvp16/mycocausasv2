@@ -142,11 +142,11 @@ export default function ProductsView({
     setIsDragging(false)
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.name) return
 
-    onSaveProduct({
+    await onSaveProduct({
       ...(editingProduct ? { id: editingProduct.id, number: editingProduct.number } : {}),
       ...formData,
       priceValue: Number(formData.priceValue),
