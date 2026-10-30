@@ -5,8 +5,7 @@
  */
 
 import { authService } from './authService'
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+import { API_BASE_URL } from './apiConfig'
 
 // Inicializadores limpios para que el cliente ingrese sus propios productos y empiece desde 0
 const INITIAL_ORDERS = []
@@ -92,7 +91,7 @@ export const adminService = {
 
       const [ordersRes, prodsRes, invRes, usersRes, couponsRes] = await Promise.allSettled([
         fetch(`${API_BASE_URL}/pedidos`, { headers }),
-        fetch(`${API_BASE_URL}/productos`),
+        fetch(`${API_BASE_URL}/productos?all=true`, { headers }),
         fetch(`${API_BASE_URL}/inventario/lotes`, { headers }),
         fetch(`${API_BASE_URL}/admin/usuarios`, { headers }),
         fetch(`${API_BASE_URL}/cupones`),
@@ -261,18 +260,14 @@ export const adminService = {
     return loadFromStorage('products', [])
   },
 
-  saveProduct(productData) {
+  async saveProduct(productData) {
     const products = this.getProducts()
     let updated
-    const isEdit = Boolean(productData.id)
+    const isEdit = Boolean(productData.id && typeof productData.id === 'number')
 
     if (isEdit) {
-      updated = products.map((p) =>
-        p.id === productData.id ? { ...p, ...productData } : p
-      )
-      // Sincronizar actualización con backend MySQL
-      if (typeof productData.id === 'number') {
-        fetch(`${API_BASE_URL}/productos/${productData.id}`, {
+      try {
+        await fetch(`${API_BASE_URL}/productos/${productData.id}`, {
           method: 'PUT',
           headers: getAuthHeaders(),
           body: JSON.stringify({
@@ -297,13 +292,49 @@ export const adminService = {
             beta_glucanos: productData.betaGlucans,
             betaGlucans: productData.betaGlucans,
           }),
-        }).catch(() => {})
+        })
+      } catch (err) {
+        console.warn('Error al actualizar producto en backend:', err)
       }
+
+      updated = products.map((p) =>
+        p.id === productData.id ? { ...p, ...productData } : p
+      )
     } else {
-      const newId = Date.now()
+      let createdId = Date.now()
+      try {
+        const res = await fetch(`${API_BASE_URL}/productos`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            categoria_nombre: productData.category,
+            categoria: productData.category,
+            nombre: productData.name,
+            nombre_cientifico: productData.botanical,
+            subtitulo: productData.category || '',
+            descripcion: productData.description || 'Extracto biotecnológico puro estandarizado.',
+            precio: productData.priceValue,
+            concentracion: productData.concentration || '10:1 DUAL EXTRACT',
+            metodo_extraccion: productData.extraction || 'Doble extracción hidroalcohólica ultrasónica',
+            stock_total: productData.stock || 25,
+            imagen: productData.image,
+            beneficios: productData.bioactives || '',
+            dosis_recomendada: productData.usage || '',
+            pureza_hplc: productData.purity || '99.4% HPLC',
+            beta_glucanos: productData.betaGlucans || '38.2%',
+          }),
+        })
+        const json = await res.json()
+        if (json.success && json.id) {
+          createdId = json.id
+        }
+      } catch (err) {
+        console.warn('Error al registrar producto en backend:', err)
+      }
+
       const newProduct = {
         ...productData,
-        id: newId,
+        id: createdId,
         number: String(products.length + 1).padStart(2, '0'),
         price: `S/ ${Number(productData.priceValue).toFixed(2)}`,
         active: true,
@@ -314,58 +345,39 @@ export const adminService = {
         },
       }
       updated = [newProduct, ...products]
-
-      // Guardar nuevo producto en MySQL
-      fetch(`${API_BASE_URL}/productos`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          categoria_nombre: productData.category,
-          categoria: productData.category,
-          nombre: productData.name,
-          nombre_cientifico: productData.botanical,
-          subtitulo: productData.category || '',
-          descripcion: productData.description || 'Extracto biotecnológico puro estandarizado.',
-          precio: productData.priceValue,
-          concentracion: productData.concentration || '10:1 DUAL EXTRACT',
-          metodo_extraccion: productData.extraction || 'Doble extracción hidroalcohólica ultrasónica',
-          stock_total: productData.stock || 25,
-          imagen: productData.image,
-          beneficios: productData.bioactives || '',
-          dosis_recomendada: productData.usage || '',
-          pureza_hplc: productData.purity || '99.4% HPLC',
-          beta_glucanos: productData.betaGlucans || '38.2%',
-        }),
-      })
-        .then((res) => res.json())
-        .then((json) => {
-          if (json.success && json.id) {
-            newProduct.id = json.id
-            saveToStorage('products', updated)
-          }
-        })
-        .catch(() => {})
     }
 
     saveToStorage('products', updated)
     return updated
   },
 
-  deleteProduct(productId) {
+  async deleteProduct(productId) {
+    if (typeof productId === 'number') {
+      try {
+        await fetch(`${API_BASE_URL}/productos/${productId}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+        })
+      } catch (err) {
+        console.warn('Error al eliminar producto en backend:', err)
+      }
+    }
     const products = this.getProducts().filter((p) => p.id !== productId)
     saveToStorage('products', products)
-
-    if (typeof productId === 'number') {
-      fetch(`${API_BASE_URL}/productos/${productId}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-      }).catch(() => {})
-    }
-
     return products
   },
 
-  toggleProductActive(productId) {
+  async toggleProductActive(productId) {
+    if (typeof productId === 'number') {
+      try {
+        await fetch(`${API_BASE_URL}/productos/${productId}/toggle`, {
+          method: 'PATCH',
+          headers: getAuthHeaders(),
+        })
+      } catch (err) {
+        console.warn('Error al alternar estado en backend:', err)
+      }
+    }
     const products = this.getProducts().map((p) =>
       p.id === productId ? { ...p, active: !p.active } : p
     )

@@ -4,8 +4,7 @@ import { useCart } from '../context/useCart'
 import { useAuth } from '../context/useAuth'
 import { formatImageUrl } from '../utils/imageUrl'
 import { adminService } from '../services/adminService'
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+import { API_BASE_URL } from '../services/apiConfig'
 
 export default function CheckoutPage() {
   const navigate = useNavigate()

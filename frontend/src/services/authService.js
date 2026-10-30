@@ -10,8 +10,7 @@ import {
   resetSecurityState,
   checkLockoutStatus,
 } from './rateLimiter'
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+import { API_BASE_URL } from './apiConfig'
 const SESSION_STORAGE_KEY = 'myco_auth_session'
 const SESSION_MAX_IDLE_MINUTES = 30
 

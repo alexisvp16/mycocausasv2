@@ -20,17 +20,22 @@ export default function ProductCatalog({ title, subtitle }) {
     })
   }, [])
 
-  // Extraer únicamente las categorías reales existentes en los productos agregados
+  // Filtrar exclusivamente productos activos para el escaparate público
+  const activeProducts = useMemo(() => {
+    return products.filter((p) => p.active !== false)
+  }, [products])
+
+  // Extraer únicamente las categorías reales existentes en los productos activos
   const dynamicCategories = useMemo(() => {
     const set = new Set()
-    products.forEach((p) => {
+    activeProducts.forEach((p) => {
       const cat = (p.category || p.categoria_nombre || '').trim()
       if (cat) {
         set.add(cat)
       }
     })
     return Array.from(set)
-  }, [products])
+  }, [activeProducts])
 
   // Si solo hay 1 categoría, solo se muestra esa categoría (sin 'TODOS' ni opciones adicionales)
   // Si hay más de 1 categoría, se incluye 'TODOS' para permitir alternar
@@ -52,14 +57,14 @@ export default function ProductCatalog({ title, subtitle }) {
 
   const filtered = useMemo(() => {
     if (!effectiveFilter || effectiveFilter === 'TODOS') {
-      return products
+      return activeProducts
     }
     const filterLower = effectiveFilter.trim().toLowerCase()
-    return products.filter((s) => {
+    return activeProducts.filter((s) => {
       const cat = (s.category || s.categoria_nombre || s.tag || '').trim().toLowerCase()
       return cat === filterLower || cat.includes(filterLower)
     })
-  }, [products, effectiveFilter])
+  }, [activeProducts, effectiveFilter])
 
   const isAdmin = isAuthenticated && user?.role === 'admin'
 
@@ -101,7 +106,7 @@ export default function ProductCatalog({ title, subtitle }) {
         )}
       </div>
 
-      {products.length === 0 ? (
+      {activeProducts.length === 0 ? (
         <div
           className="glass-card"
           style={{ padding: '3.5rem 2rem', textAlign: 'center', margin: '2rem 0' }}

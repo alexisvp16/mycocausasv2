@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { formatImageUrl } from '../utils/imageUrl'
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+import { API_BASE_URL } from '../services/apiConfig'
 
 export default function OrderTrackingPage() {
   const { orderCode } = useParams()

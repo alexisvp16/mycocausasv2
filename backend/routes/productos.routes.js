@@ -11,9 +11,13 @@ const { verifyToken, requireAdmin, optionalAuth } = require('../middlewares/auth
 /**
  * GET /api/productos
  * Obtiene todos los productos activos con su categoría y lote vigente
+ * Si se pasa ?all=true o el solicitante es admin, incluye también los inactivos
  */
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
+    const isAdmin = req.user && req.user.rol === 'admin';
+    const showAll = isAdmin || req.query.all === '1' || req.query.all === 'true';
+
     const query = `
       SELECT 
         p.id,
@@ -44,7 +48,7 @@ router.get('/', async (req, res) => {
       FROM productos p
       INNER JOIN categorias c ON p.categoria_id = c.id
       LEFT JOIN lotes_inventario l ON l.producto_id = p.id AND l.estado_coa = 'Certificado'
-      WHERE p.activo = 1
+      ${showAll ? '' : 'WHERE p.activo = 1'}
       ORDER BY p.destacado DESC, p.id ASC
     `;
 
@@ -398,12 +402,15 @@ router.post('/upload-imagen', optionalAuth, async (req, res) => {
     fs.writeFileSync(targetPath, buffer);
 
     const relativeUrl = `/uploads/${safeName}`;
-    const fullUrl = `http://localhost:5000/uploads/${safeName}`;
+    const host = req.get('host') || 'localhost:5000';
+    const protocol = req.protocol || 'http';
+    const fullUrl = `${protocol}://${host}${relativeUrl}`;
 
     return res.json({
       success: true,
       message: 'Imagen subida correctamente.',
-      imageUrl: fullUrl,
+      imageUrl: relativeUrl,
+      fullUrl,
       relativeUrl
     });
   } catch (error) {
@@ -411,6 +418,41 @@ router.post('/upload-imagen', optionalAuth, async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Error en el servidor al guardar la imagen.'
+    });
+  }
+});
+
+/**
+ * PATCH /api/productos/:id/toggle
+ * Activar o desactivar producto (Solo Administradores)
+ */
+router.patch('/:id/toggle', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [result] = await db.query(
+      'UPDATE productos SET activo = IF(activo = 1, 0, 1) WHERE id = ?',
+      [id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Producto no encontrado.'
+      });
+    }
+
+    const [rows] = await db.query('SELECT id, nombre, activo FROM productos WHERE id = ?', [id]);
+
+    return res.json({
+      success: true,
+      message: `Producto ${rows[0]?.activo ? 'activado' : 'desactivado'} correctamente.`,
+      data: rows[0]
+    });
+  } catch (error) {
+    console.error('Error al cambiar estado de producto:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al cambiar estado del producto.'
     });
   }
 });

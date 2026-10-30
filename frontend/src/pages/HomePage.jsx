@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import Hero from '../components/hero/Hero'
 import MetricsBar from '../components/science/MetricsBar'
+import ProductCatalog from '../components/products/ProductCatalog'
 
 export default function HomePage() {
   return (
@@ -9,6 +10,12 @@ export default function HomePage() {
       {/* Exclusivamente la Pantalla de Inicio */}
       <Hero />
       <MetricsBar />
+
+      {/* Catálogo de Fórmulas y Extractos Activos */}
+      <ProductCatalog
+        title="Fórmulas y extractos disponibles"
+        subtitle="[ CATÁLOGO DE PRODUCTOS ]"
+      />
 
       {/* Portal de Acceso a los Demás Módulos */}
       <section className="home-modules-portal">
