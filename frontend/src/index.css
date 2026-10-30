@@ -1,0 +1,63 @@
+
+@import "tailwindcss";
+
+:root {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #f1f5f9;
+  background: #060908;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --font-mono: 'Space Grotesk', monospace, sans-serif;
+  --color-bg: #060908;
+  --color-surface: #0b110e;
+  --color-surface-elevated: #111a15;
+  --color-bio-neon: #00f5a0;
+  --color-bio-emerald: #10b981;
+  --color-bio-glow: rgba(0, 245, 160, 0.25);
+  --color-bio-subtle: rgba(16, 185, 129, 0.12);
+  --color-text-main: #f8fafc;
+  --color-text-muted: #849a8e;
+  --color-border: rgba(52, 211, 153, 0.16);
+  --color-border-glow: rgba(0, 245, 160, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: #c4a36a;
+  color: #10110f;
+}

@@ -1,0 +1,86 @@
+# =============================================================================
+# MYCO CAUSAS v2 — DOCKER COMPOSE PARA PRODUCCIÓN (AWS EC2 / LIGHTSAIL)
+# =============================================================================
+# Levantar toda la plataforma con un solo comando:
+#   docker compose up -d --build
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # BASE DE DATOS MYSQL 8.0 (Si usas AWS RDS, puedes comentar este servicio)
+  # ---------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: myco_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-alexisvela123}
+      MYSQL_DATABASE: ${DB_NAME:-myco_causas_v2}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/myco_causas_v2.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - myco_network
+
+  # ---------------------------------------------------------------------------
+  # BACKEND API REST (Node.js Express)
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: myco_backend
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DB_HOST: ${DB_HOST:-mysql}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-alexisvela123}
+      DB_NAME: ${DB_NAME:-myco_causas_v2}
+      JWT_SECRET: ${JWT_SECRET:-myco_causas_super_secret_jwt_key_2026_alexis}
+      JWT_EXPIRES_IN: 24h
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+    volumes:
+      - ./backend/uploads:/app/uploads
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql
+    networks:
+      - myco_network
+
+  # ---------------------------------------------------------------------------
+  # FRONTEND (Nginx + Vite React SPA)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    container_name: myco_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - myco_network
+
+# -----------------------------------------------------------------------------
+# VOLÚMENES Y REDES
+# -----------------------------------------------------------------------------
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  myco_network:
+    driver: bridge
