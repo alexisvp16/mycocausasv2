@@ -235,9 +235,57 @@ router.post('/', optionalAuth, async (req, res) => {
     }
 
     const envio = Number(costo_envio) || 0.00;
-    const montoDescuento = Number(req.body.descuento) || 0.00;
-    const cuponCodigo = req.body.cupon_codigo ? req.body.cupon_codigo.trim().toUpperCase() : null;
-    const totalFinal = Math.max(0, subtotalCalculado - montoDescuento + envio);
+    let montoDescuento = 0.00;
+    let cuponCodigoValido = null;
+
+    // Validación estricta en base de datos del cupón de descuento
+    if (req.body.cupon_codigo && req.body.cupon_codigo.trim()) {
+      const candidateCode = req.body.cupon_codigo.trim().toUpperCase();
+      const [cupones] = await connection.query(
+        'SELECT * FROM cupones WHERE UPPER(codigo) = ? AND activo = 1 LIMIT 1 FOR UPDATE',
+        [candidateCode]
+      );
+
+      if (cupones.length > 0) {
+        const c = cupones[0];
+        let cuponValido = true;
+
+        // Comprobar fecha expiración
+        if (c.fecha_expiracion) {
+          const hoy = new Date();
+          hoy.setHours(0, 0, 0, 0);
+          const exp = new Date(c.fecha_expiracion);
+          exp.setHours(0, 0, 0, 0);
+          if (exp < hoy) cuponValido = false;
+        }
+
+        // Comprobar límite de usos
+        if (c.limite_usos !== null && c.veces_usado >= c.limite_usos) {
+          cuponValido = false;
+        }
+
+        // Comprobar monto mínimo
+        if (Number(c.monto_minimo) > 0 && subtotalCalculado < Number(c.monto_minimo)) {
+          cuponValido = false;
+        }
+
+        if (cuponValido) {
+          cuponCodigoValido = c.codigo;
+          if (c.tipo_descuento === 'porcentaje') {
+            montoDescuento = (subtotalCalculado * Number(c.valor_descuento)) / 100;
+          } else {
+            montoDescuento = Math.min(subtotalCalculado, Number(c.valor_descuento));
+          }
+          montoDescuento = Number(montoDescuento.toFixed(2));
+        } else {
+          throw new Error(`El cupón "${candidateCode}" no cumple las condiciones de validez, monto mínimo o ha expirado.`);
+        }
+      } else {
+        throw new Error(`El cupón "${candidateCode}" no existe o se encuentra inactivo.`);
+      }
+    }
+
+    const totalFinal = Math.max(0, Number((subtotalCalculado - montoDescuento + envio).toFixed(2)));
 
     // 2. Generar número de orden único correlativo
     const [lastOrder] = await connection.query('SELECT id FROM pedidos ORDER BY id DESC LIMIT 1');
@@ -266,7 +314,7 @@ router.post('/', optionalAuth, async (req, res) => {
         metodo_pago || 'Yape',
         subtotalCalculado,
         montoDescuento,
-        cuponCodigo,
+        cuponCodigoValido,
         envio,
         totalFinal,
         notas_cliente || null
@@ -276,11 +324,11 @@ router.post('/', optionalAuth, async (req, res) => {
     const pedidoId = pedidoResult.insertId;
 
     // Incrementar veces_usado en cupones si aplica
-    if (cuponCodigo) {
+    if (cuponCodigoValido) {
       try {
         await connection.query(
           'UPDATE cupones SET veces_usado = veces_usado + 1 WHERE UPPER(codigo) = ?',
-          [cuponCodigo]
+          [cuponCodigoValido]
         );
       } catch (errCupon) {
         console.warn('No se pudo incrementar uso de cupón:', errCupon.message);
@@ -348,10 +396,49 @@ router.post('/', optionalAuth, async (req, res) => {
 });
 
 /**
+ * Funciones de sanitización de datos personales para telemetría pública
+ */
+function maskName(name) {
+  if (!name) return 'Cliente Myco';
+  return name
+    .trim()
+    .split(/\s+/)
+    .map(word => word.length <= 2 ? word : word[0] + '*'.repeat(Math.min(5, word.length - 1)))
+    .join(' ');
+}
+
+function maskPhone(phone) {
+  if (!phone) return '*** *** ***';
+  const clean = phone.trim();
+  const digits = clean.replace(/\D/g, '');
+  if (digits.length >= 9) {
+    const end = digits.slice(-3);
+    const start = digits.startsWith('51') ? '+51 ' + digits.slice(2, 5) : digits.slice(0, 3);
+    return `${start} *** ${end}`;
+  }
+  return clean.slice(0, 2) + '***' + clean.slice(-2);
+}
+
+function maskEmail(email) {
+  if (!email || !email.includes('@')) return '***@***.com';
+  const [user, domain] = email.split('@');
+  const maskedUser = user.length <= 2 ? user[0] + '***' : user[0] + '***' + user.slice(-1);
+  return `${maskedUser}@${domain}`;
+}
+
+function maskAddress(addr) {
+  if (!addr) return 'Dirección registrada en laboratorio';
+  const parts = addr.trim().split(/\s+/);
+  if (parts.length <= 2) return `${parts[0]} *** (Protegido por Privacidad)`;
+  return `${parts[0]} ${parts[1][0]}*** (Protegido por Privacidad)`;
+}
+
+/**
  * GET /api/pedidos/tracking/:codigoOrId
  * Endpoint público de seguimiento y tracking de pedido en tiempo real (4 estados)
+ * Aplica enmascaramiento estricto de datos sensibles (PII) para usuarios no propietarios.
  */
-router.get('/tracking/:codigoOrId', async (req, res) => {
+router.get('/tracking/:codigoOrId', optionalAuth, async (req, res) => {
   try {
     const { codigoOrId } = req.params;
     const clean = codigoOrId.trim();
@@ -445,10 +532,28 @@ router.get('/tracking/:codigoOrId', async (req, res) => {
     else if (pedido.estado === 'Entregado') currentStep = 4;
     else if (pedido.estado === 'Cancelado') currentStep = 0;
 
+    // Verificar si el solicitante es el propietario o un Administrador
+    const isOwnerOrAdmin = req.user && (
+      req.user.rol === 'admin' ||
+      (pedido.usuario_id && req.user.id === pedido.usuario_id)
+    );
+
+    // Enmascarar información sensible si es consulta pública
+    const safePedido = isOwnerOrAdmin ? { ...pedido } : {
+      ...pedido,
+      usuario_id: null,
+      nombre_cliente: maskName(pedido.nombre_cliente),
+      email_cliente: maskEmail(pedido.email_cliente),
+      telefono_cliente: maskPhone(pedido.telefono_cliente),
+      direccion_envio: maskAddress(pedido.direccion_envio),
+      referencia_direccion: null,
+      notas_cliente: null
+    };
+
     return res.json({
       success: true,
       data: {
-        ...pedido,
+        ...safePedido,
         items,
         currentStep,
         estadosTracking
@@ -467,7 +572,7 @@ router.get('/tracking/:codigoOrId', async (req, res) => {
  * PATCH /api/pedidos/:id/estado
  * Actualizar estado logístico o guía de tracking desde el Panel Admin
  */
-router.patch('/:id/estado', optionalAuth, async (req, res) => {
+router.patch('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { estado, estado_pago, guia_tracking } = req.body;

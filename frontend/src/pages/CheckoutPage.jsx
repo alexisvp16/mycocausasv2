@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/useCart'
 import { useAuth } from '../context/useAuth'
 import { formatImageUrl } from '../utils/imageUrl'
+import { authService } from '../services/authService'
 import { adminService } from '../services/adminService'
 import { API_BASE_URL } from '../services/apiConfig'
 
@@ -93,12 +94,27 @@ export default function CheckoutPage() {
       return
     }
 
+    // Validación rigurosa de formato de correo
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email_cliente.trim())) {
+      setErrorMessage('Por favor ingresa un correo electrónico válido (ejemplo: usuario@dominio.com).')
+      return
+    }
+
+    // Validación de número de teléfono / WhatsApp (al menos 9 dígitos numéricos)
+    const cleanPhone = formData.telefono_cliente.trim().replace(/[\s-]/g, '')
+    if (cleanPhone.length < 9) {
+      setErrorMessage('Por favor ingresa un número de teléfono / WhatsApp válido (mínimo 9 dígitos).')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
-      const token = localStorage.getItem('myco_token') || sessionStorage.getItem('myco_token')
+      const activeSession = authService.getStoredSession()
+      const authToken = activeSession?.token || localStorage.getItem('myco_token') || sessionStorage.getItem('myco_token')
       const headers = { 'Content-Type': 'application/json' }
-      if (token) headers['Authorization'] = `Bearer ${token}`
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`
 
       const payload = {
         nombre_cliente: formData.nombre_cliente.trim(),

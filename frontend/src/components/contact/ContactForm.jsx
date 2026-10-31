@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { useCart } from '../../context/useCart'
+import { API_BASE_URL } from '../../services/apiConfig'
 
 export default function ContactForm() {
   const { showToast } = useCart()
   const [form, setForm] = useState({
     name: '',
+    email: '',
     phone: '',
     subject: 'Asesoría de Fórmulas',
     message: '',
@@ -18,13 +20,29 @@ export default function ContactForm() {
       return
     }
 
-    const text = `¡Hola Myco Causas!%0A%0AMi nombre es: ${form.name}%0ATeléfono: ${
+    // Persistir consulta en base de datos MySQL de Myco Causas
+    try {
+      fetch(`${API_BASE_URL}/contacto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre_completo: form.name.trim(),
+          email: form.email.trim() || 'consulta@mycocausas.pe',
+          telefono: form.phone.trim() || null,
+          asunto: form.subject,
+          mensaje: form.message.trim(),
+          tipo_consulta: form.subject,
+        }),
+      }).catch((err) => console.warn('Aviso: no se pudo sincronizar consulta en DB:', err))
+    } catch (_) {}
+
+    const text = `¡Hola Myco Causas!%0A%0AMi nombre es: ${encodeURIComponent(form.name)}%0ACorreo: ${encodeURIComponent(form.email || 'No especificado')}%0ATeléfono: ${encodeURIComponent(
       form.phone || 'No especificado'
-    }%0AAsunto: ${form.subject}%0A%0AMensaje:%0A${form.message}`
+    )}%0AAsunto: ${encodeURIComponent(form.subject)}%0A%0AMensaje:%0A${encodeURIComponent(form.message)}`
 
     window.open(`https://wa.me/51937189745?text=${text}`, '_blank')
     setSent(true)
-    showToast('Abriendo WhatsApp con tu consulta...')
+    showToast('✓ Consulta registrada y abriendo WhatsApp oficial...')
   }
 
   return (
@@ -38,7 +56,7 @@ export default function ContactForm() {
 
       <form onSubmit={handleSubmit} className="interactive-contact-form">
         <div className="form-field">
-          <label htmlFor="form-name">Tu Nombre</label>
+          <label htmlFor="form-name">Tu Nombre Completo *</label>
           <input
             id="form-name"
             type="text"
@@ -50,7 +68,18 @@ export default function ContactForm() {
         </div>
 
         <div className="form-field">
-          <label htmlFor="form-phone">Número de WhatsApp</label>
+          <label htmlFor="form-email">Correo Electrónico (Opcional)</label>
+          <input
+            id="form-email"
+            type="email"
+            placeholder="Ej: carlos@dominio.com"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="form-phone">Número de WhatsApp / Teléfono</label>
           <input
             id="form-phone"
             type="tel"

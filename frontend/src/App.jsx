@@ -18,6 +18,7 @@ import CheckoutPage from './pages/CheckoutPage'
 import OrderTrackingPage from './pages/OrderTrackingPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import ProtectedRoute from './components/auth/ProtectedRoute'
+import ErrorBoundary from './components/common/ErrorBoundary'
 import './App.css'
 
 function ScrollToTop() {
@@ -98,8 +99,10 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
-          <ScrollToTop />
-          <AppContent />
+          <ErrorBoundary>
+            <ScrollToTop />
+            <AppContent />
+          </ErrorBoundary>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

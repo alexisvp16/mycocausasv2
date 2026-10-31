@@ -94,7 +94,7 @@ export const adminService = {
         fetch(`${API_BASE_URL}/productos?all=true`, { headers }),
         fetch(`${API_BASE_URL}/inventario/lotes`, { headers }),
         fetch(`${API_BASE_URL}/admin/usuarios`, { headers }),
-        fetch(`${API_BASE_URL}/cupones`),
+        fetch(`${API_BASE_URL}/cupones`, { headers }),
       ])
 
       const result = {}
@@ -460,7 +460,9 @@ export const adminService = {
 
   async fetchCoupons() {
     try {
-      const res = await fetch(`${API_BASE_URL}/cupones`)
+      const res = await fetch(`${API_BASE_URL}/cupones`, {
+        headers: getAuthHeaders(),
+      })
       if (res.ok) {
         const json = await res.json()
         if (json.success && Array.isArray(json.data)) {

@@ -1,12 +1,47 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { CartContext } from './cartContextDefinition'
 
+const CART_STORAGE_KEY = 'myco_cart_items'
+const COUPON_STORAGE_KEY = 'myco_cart_coupon'
+
 export function CartProvider({ children }) {
-  const [cart, setCart] = useState([])
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem(CART_STORAGE_KEY)
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [activeModalProduct, setActiveModalProduct] = useState(null)
   const [toastMessage, setToastMessage] = useState('')
-  const [appliedCoupon, setAppliedCoupon] = useState(null)
+  const [appliedCoupon, setAppliedCoupon] = useState(() => {
+    try {
+      const saved = localStorage.getItem(COUPON_STORAGE_KEY)
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
+  })
+
+  // Persistir carrito en localStorage automáticamente
+  useEffect(() => {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart))
+    } catch (_) {}
+  }, [cart])
+
+  // Persistir cupón en localStorage
+  useEffect(() => {
+    try {
+      if (appliedCoupon) {
+        localStorage.setItem(COUPON_STORAGE_KEY, JSON.stringify(appliedCoupon))
+      } else {
+        localStorage.removeItem(COUPON_STORAGE_KEY)
+      }
+    } catch (_) {}
+  }, [appliedCoupon])
 
   const showToast = (message) => {
     setToastMessage(message)
@@ -60,6 +95,11 @@ export function CartProvider({ children }) {
 
   const clearCart = () => {
     setCart([])
+    setAppliedCoupon(null)
+    try {
+      localStorage.removeItem(CART_STORAGE_KEY)
+      localStorage.removeItem(COUPON_STORAGE_KEY)
+    } catch (_) {}
   }
 
   const totalCartPrice = cart.reduce(

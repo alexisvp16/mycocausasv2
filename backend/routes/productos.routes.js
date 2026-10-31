@@ -422,7 +422,7 @@ router.put('/:id', optionalAuth, async (req, res) => {
 const fs = require('fs');
 const path = require('path');
 
-router.post('/upload-imagen', optionalAuth, async (req, res) => {
+router.post('/upload-imagen', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { imageBase64 } = req.body;
     if (!imageBase64) {
@@ -441,7 +441,7 @@ router.post('/upload-imagen', optionalAuth, async (req, res) => {
       base64Content = parts[1];
       const mimeMatch = prefix.match(/data:([^;]+)/);
       if (mimeMatch) {
-        mimeType = mimeMatch[1];
+        mimeType = mimeMatch[1].toLowerCase();
       }
     }
 
@@ -449,9 +449,29 @@ router.post('/upload-imagen', optionalAuth, async (req, res) => {
     if (ext.includes('+')) ext = ext.split('+')[0];
     if (ext === 'jpeg') ext = 'jpg';
 
+    // Lista blanca estricta de extensiones y tipos MIME permitidos
+    const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+
+    if (!ALLOWED_MIMES.includes(mimeType) || !ALLOWED_EXTS.includes(ext.toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Formato de imagen no permitido. Solo se aceptan archivos JPG, PNG, WEBP o GIF.'
+      });
+    }
+
     // Limpiar posibles espacios en blanco o saltos de línea del base64
     const cleanBase64 = base64Content.replace(/\s/g, '');
     const buffer = Buffer.from(cleanBase64, 'base64');
+
+    // Límite de tamaño máximo (15 Megabytes)
+    if (buffer.length > 15 * 1024 * 1024) {
+      return res.status(400).json({
+        success: false,
+        message: 'La imagen excede el límite de tamaño permitido (máximo 15MB).'
+      });
+    }
+
     const safeName = `producto_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
     const uploadDir = path.join(__dirname, '..', 'uploads');
 

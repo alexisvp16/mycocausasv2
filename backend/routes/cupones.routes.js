@@ -6,13 +6,15 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const { verifyToken, requireAdmin, optionalAuth } = require('../middlewares/authMiddleware');
 
 /**
  * GET /api/cupones
- * Obtiene todos los cupones registrados en la plataforma
+ * Obtiene todos los cupones registrados en la plataforma (Gestión Administrativa)
  */
-router.get('/', async (req, res) => {
+router.get('/', verifyToken, requireAdmin, async (req, res) => {
   try {
+
     const [cupones] = await db.query(`
       SELECT 
         id,
@@ -155,9 +157,9 @@ router.post('/validar', async (req, res) => {
 
 /**
  * POST /api/cupones
- * Crea un nuevo cupón de descuento en el sistema
+ * Crea un nuevo cupón de descuento en el sistema (Gestión Administrativa)
  */
-router.post('/', async (req, res) => {
+router.post('/', verifyToken, requireAdmin, async (req, res) => {
   try {
     const {
       codigo,
@@ -230,9 +232,9 @@ router.post('/', async (req, res) => {
 
 /**
  * PUT /api/cupones/:id
- * Modifica un cupón existente
+ * Modifica un cupón existente (Gestión Administrativa)
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -307,9 +309,9 @@ router.put('/:id', async (req, res) => {
 
 /**
  * PATCH /api/cupones/:id/toggle
- * Activa o desactiva un cupón
+ * Activa o desactiva un cupón (Gestión Administrativa)
  */
-router.patch('/:id/toggle', async (req, res) => {
+router.patch('/:id/toggle', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -337,9 +339,9 @@ router.patch('/:id/toggle', async (req, res) => {
 
 /**
  * DELETE /api/cupones/:id
- * Elimina un cupón de la base de datos
+ * Elimina un cupón de la base de datos (Gestión Administrativa)
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     await db.query(`DELETE FROM cupones WHERE id = ?`, [id]);
