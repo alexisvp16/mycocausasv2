@@ -176,11 +176,11 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="checkout-page-container" style={{ maxWidth: '1240px', margin: '0 auto', padding: '3rem 5% 5rem' }}>
+    <div className="checkout-page-container">
       {/* Header Banner */}
       <div className="checkout-header-banner" style={{ marginBottom: '2.5rem' }}>
         <span className="section-subtitle">[ CHECKOUT // PASARELA DE COMPRA SEGURA ]</span>
-        <h1 style={{ fontSize: '2.2rem', color: '#fff', margin: '0.5rem 0' }}>
+        <h1 className="checkout-main-title" style={{ fontSize: '2.2rem', color: '#fff', margin: '0.5rem 0' }}>
           Finalizar tu <span className="text-bio-glow">Orden Micelial.</span>
         </h1>
         <p style={{ color: '#9ca3af', fontSize: '0.95rem' }}>
@@ -208,15 +208,7 @@ export default function CheckoutPage() {
       )}
 
       <form onSubmit={handleSubmitOrder}>
-        <div
-          className="checkout-grid-layout"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: '2.5rem',
-            alignItems: 'start',
-          }}
-        >
+        <div className="checkout-grid-layout">
           {/* Columna Izquierda: Datos del Cliente & Envío */}
           <div className="checkout-form-column" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {/* Banner de Estado de Usuario */}
@@ -292,7 +284,7 @@ export default function CheckoutPage() {
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="checkout-two-col">
                   <div className="form-field">
                     <label style={{ fontSize: '0.85rem', color: '#d1d5db', marginBottom: '4px' }}>
                       Correo Electrónico *
@@ -346,7 +338,7 @@ export default function CheckoutPage() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="checkout-two-col">
                   <div className="form-field">
                     <label style={{ fontSize: '0.85rem', color: '#d1d5db', marginBottom: '4px' }}>
                       Departamento *

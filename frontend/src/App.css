@@ -2198,6 +2198,115 @@
   }
 }
 
+/* BASE RESPONSIVE COMPONENT CLASSES */
+.checkout-page-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 3rem 5% 5rem;
+  width: 100%;
+}
+
+.checkout-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.checkout-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.order-tracking-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 3.5rem 5% 6rem;
+  width: 100%;
+}
+
+.tracking-search-form {
+  display: inline-flex;
+  gap: 8px;
+  margin-top: 1.5rem;
+  max-width: 440px;
+  width: 100%;
+}
+
+.tracking-search-input {
+  flex: 1;
+  padding: 10px 14px;
+  background: rgba(5, 10, 8, 0.8);
+  border: 1px solid var(--border-bio);
+  border-radius: 6px;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.tracking-search-input:focus {
+  border-color: var(--neon-emerald);
+  box-shadow: 0 0 10px rgba(0, 245, 160, 0.25);
+}
+
+.tracking-search-btn {
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.tracking-stepper-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.tracking-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.tracking-step-item.step-pending {
+  opacity: 0.45;
+}
+
+.tracking-step-circle {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.tracking-step-text-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tracking-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN // TABLET & MOBILE VIEWPORTS
+   ========================================================================== */
+
 @media (max-width: 860px) {
   .bio-mobile-toggle {
     display: inline-flex;
@@ -2211,15 +2320,18 @@
 
   .bio-nav-menu {
     position: fixed;
-    top: 72px;
+    top: 100%;
     left: 0;
     right: 0;
+    max-height: calc(100vh - 65px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     background: rgba(4, 10, 8, 0.98);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border-bio);
     flex-direction: column;
-    padding: 1.5rem 2rem 2rem;
+    padding: 1.5rem 1.75rem 2rem;
     gap: 1.25rem;
     align-items: flex-start;
     transform: translateY(-130%);
@@ -2239,7 +2351,7 @@
   .bio-nav-menu .nav-item {
     font-size: 1.05rem;
     width: 100%;
-    padding: 8px 0;
+    padding: 10px 0;
     border-bottom: 1px solid rgba(0, 245, 160, 0.08);
   }
 
@@ -2257,43 +2369,395 @@
     justify-content: center;
     padding: 10px;
   }
+
+  /* Make hover pills visible on touch devices */
+  .inspect-pill {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
-@media (max-width: 640px) {
-
-  .specimens-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .metrics-strip {
-    grid-template-columns: 1fr;
-    gap: 28px;
-  }
-
-  .spec-metrics-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 680px) {
+  /* Tracking Stepper becomes vertical stacked cards on mobile */
+  .tracking-stepper-grid {
+    display: flex;
+    flex-direction: column;
     gap: 12px;
+    width: 100%;
   }
 
-  .input-group {
+  .tracking-step-item {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+    gap: 14px;
+    background: rgba(8, 14, 11, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 14px 16px;
+    width: 100%;
+  }
+
+  .tracking-step-item.step-current {
+    border-color: var(--neon-emerald);
+    background: rgba(0, 245, 160, 0.06);
+  }
+
+  .tracking-step-circle {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    font-size: 1.1rem;
+    margin-bottom: 0;
+  }
+
+  .tracking-step-text-wrap {
+    align-items: flex-start;
+    text-align: left;
+    flex: 1;
+  }
+
+  .tracking-step-text-wrap .step-desc-text {
+    max-width: 100% !important;
+  }
+
+  .tracking-details-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .tracking-search-form {
     flex-direction: column;
   }
 
-  .footer-top {
+  .tracking-search-btn {
+    width: 100%;
+    padding: 12px;
+  }
+
+  /* Checkout Form Stacks */
+  .checkout-grid-layout {
     grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  .checkout-two-col {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .checkout-summary-column {
+    position: static !important;
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Navbar */
+  .bio-navbar {
+    padding: 10px 14px;
+  }
+
+  .bio-brand {
+    gap: 10px;
+  }
+
+  /* Hero Section Mobile Polish */
+  .bio-hero {
+    padding: 24px 14px 36px;
+    gap: 32px;
+  }
+
+  .hero-status-tag {
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    word-break: break-word;
+  }
+
+  .hero-headline {
+    font-size: clamp(26px, 8vw, 42px);
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+
+  .hero-lead {
+    font-size: 13.5px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .specimen-tabs {
+    gap: 6px;
+  }
+
+  .specimen-tab-btn {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .specimen-live-card {
+    padding: 18px 14px;
   }
 
   .spec-cta-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
+  }
+
+  .spec-cta-row .btn-bio-primary,
+  .spec-cta-row .btn-bio-secondary {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding: 12px 16px;
+    font-size: 12.5px;
+  }
+
+  .hud-container {
+    padding: 16px 12px;
+  }
+
+  .hud-image-wrapper {
+    height: 250px;
+    margin: 12px 0;
+  }
+
+  /* Product Catalog */
+  .bio-collection {
+    padding: 36px 14px;
+  }
+
+  .collection-header {
+    margin-bottom: 28px;
+    gap: 14px;
+  }
+
+  .section-title {
+    font-size: clamp(24px, 7vw, 36px);
+  }
+
+  .filter-pills {
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    font-size: 10.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .specimens-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .card-action-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .card-action-bar .btn-bio-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Science Metrics Bar */
+  .metrics-strip {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 24px 16px;
+  }
+
+  .metric-card {
+    padding: 16px 14px;
+  }
+
+  /* Modal Technical Sheet */
+  .modal-backdrop {
+    padding: 10px;
   }
 
   .specimen-modal {
-    padding: 24px;
+    width: 96%;
+    max-height: 88vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 22px 16px;
+    border-radius: 10px;
+  }
+
+  .modal-media img {
+    height: 180px;
+  }
+
+  .modal-action-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .modal-action-row .btn-bio-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Portal Cards */
+  .home-modules-portal {
+    padding: 40px 14px;
+  }
+
+  .portal-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .portal-card {
+    padding: 20px 16px;
+  }
+
+  /* Contact & Form Inputs */
+  .input-group {
+    flex-direction: column;
+  }
+
+  .trace-submit-btn {
+    height: 48px;
+    padding: 12px 20px;
+    width: 100%;
+    justify-content: center;
   }
 
   .contact-form-card {
-    padding: 24px 20px;
+    padding: 22px 16px;
+  }
+
+  .footer-top {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  /* Account & Login */
+  .login-page-wrapper {
+    padding: 24px 14px 40px;
+  }
+
+  .login-card-container {
+    padding: 22px 16px;
+  }
+
+  .account-page-wrapper {
+    padding: 24px 14px 48px;
+  }
+
+  .account-header-card {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 16px;
+  }
+
+  .account-header-info {
+    align-items: center;
+    text-align: center;
+  }
+
+  .role-tag-row {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .btn-account-logout {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .order-item-foot {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .btn-tracking-link {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .checkout-page-container,
+  .order-tracking-page {
+    padding: 24px 14px 48px;
+  }
+
+  .admin-panel-card {
+    padding: 18px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Navbar Ultra Compact for Phones */
+  .brand-logo-container {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brand-title {
+    font-size: 15.5px;
+    letter-spacing: 0.08em;
+  }
+
+  .brand-sub {
+    font-size: 7.5px;
+    letter-spacing: 0.14em;
+  }
+
+  .cart-trigger-btn {
+    padding: 6px 10px;
+    gap: 4px;
+  }
+
+  .cart-trigger-btn .cart-label {
+    display: none;
+  }
+
+  .nav-actions {
+    gap: 8px;
+  }
+
+  .bio-announcement {
+    padding: 6px 12px;
+  }
+
+  .tech-coord {
+    display: none;
+  }
+
+  .ticker-text {
+    font-size: 10px;
+    max-width: 220px;
+  }
+
+  .spec-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 }
 
@@ -2948,6 +3412,13 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 28px;
+}
+
+@media (max-width: 768px) {
+  .account-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
 
 .account-card {

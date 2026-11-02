@@ -106,11 +106,11 @@ export default function OrderTrackingPage() {
   const currentStep = order ? getStepIndex(order.estado) : 1
 
   return (
-    <div className="order-tracking-page" style={{ maxWidth: '1240px', margin: '0 auto', padding: '3.5rem 5% 6rem' }}>
+    <div className="order-tracking-page">
       {/* Header Banner */}
       <div className="tracking-header-banner" style={{ textAlign: 'center', marginBottom: '3rem' }}>
         <span className="section-subtitle">[ TELEMETRÍA LOGÍSTICA & SEGUIMIENTO EN VIVO ]</span>
-        <h1 style={{ fontSize: '2.5rem', color: '#fff', margin: '0.6rem 0' }}>
+        <h1 className="tracking-main-title" style={{ fontSize: '2.5rem', color: '#fff', margin: '0.6rem 0' }}>
           Tracking de <span className="text-bio-glow">tu Pedido.</span>
         </h1>
         <p style={{ color: '#9ca3af', maxWidth: '640px', margin: '0 auto', fontSize: '0.95rem' }}>
@@ -118,25 +118,15 @@ export default function OrderTrackingPage() {
         </p>
 
         {/* Buscador de código si no vino en URL */}
-        <form onSubmit={handleManualSearch} style={{ display: 'inline-flex', gap: '8px', marginTop: '1.5rem', maxWidth: '440px', width: '100%' }}>
+        <form onSubmit={handleManualSearch} className="tracking-search-form">
           <input
             type="text"
             placeholder="Ingresa tu número de orden (Ej: ORD-2026-001)..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value.toUpperCase())}
-            style={{
-              flex: 1,
-              padding: '10px 14px',
-              background: 'rgba(5, 10, 8, 0.8)',
-              border: '1px solid var(--border-bio)',
-              borderRadius: '6px',
-              color: '#fff',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.85rem',
-              textTransform: 'uppercase',
-            }}
+            className="tracking-search-input"
           />
-          <button type="submit" className="btn-bio-primary" style={{ padding: '10px 18px', fontSize: '0.85rem' }}>
+          <button type="submit" className="btn-bio-primary tracking-search-btn">
             Buscar
           </button>
         </form>
@@ -240,16 +230,7 @@ export default function OrderTrackingPage() {
 
             {/* Stepper Visual de 4 Estados */}
             <div className="stepper-horizontal-container" style={{ position: 'relative', margin: '1rem 0 2rem' }}>
-              <div
-                className="stepper-grid"
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                  gap: '1rem',
-                  position: 'relative',
-                  zIndex: 2,
-                }}
-              >
+              <div className="stepper-grid tracking-stepper-grid">
                 {estados.map((step) => {
                   const isCompleted = step.num < currentStep
                   const isCurrent = step.num === currentStep
@@ -258,25 +239,12 @@ export default function OrderTrackingPage() {
                   return (
                     <div
                       key={step.key}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        textAlign: 'center',
-                        opacity: isPending ? 0.45 : 1,
-                        transition: 'all 0.3s',
-                      }}
+                      className={`tracking-step-item ${isCompleted ? 'step-completed' : ''} ${isCurrent ? 'step-current' : ''} ${isPending ? 'step-pending' : ''}`}
                     >
                       {/* Círculo indicador */}
                       <div
+                        className="tracking-step-circle"
                         style={{
-                          width: '54px',
-                          height: '54px',
-                          borderRadius: '50%',
-                          display: 'grid',
-                          placeItems: 'center',
-                          fontSize: '1.25rem',
-                          marginBottom: '1rem',
                           background: isCompleted
                             ? 'var(--neon-emerald)'
                             : isCurrent
@@ -289,24 +257,26 @@ export default function OrderTrackingPage() {
                             ? '2px solid var(--neon-emerald)'
                             : '2px solid var(--border-subtle)',
                           boxShadow: isCurrent ? '0 0 25px rgba(0, 245, 160, 0.5)' : 'none',
-                          fontWeight: 700,
                         }}
                       >
                         {isCompleted ? '✓' : step.icon}
                       </div>
 
-                      <strong
-                        style={{
-                          fontSize: '0.95rem',
-                          color: isCurrent ? 'var(--neon-emerald)' : '#fff',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        {step.title}
-                      </strong>
-                      <span style={{ fontSize: '0.75rem', color: '#9ca3af', maxWidth: '180px', lineHeight: 1.4 }}>
-                        {step.desc}
-                      </span>
+                      <div className="tracking-step-text-wrap">
+                        <strong
+                          style={{
+                            fontSize: '0.95rem',
+                            color: isCurrent ? 'var(--neon-emerald)' : '#fff',
+                            marginBottom: '4px',
+                            display: 'block',
+                          }}
+                        >
+                          {step.title}
+                        </strong>
+                        <span className="step-desc-text" style={{ fontSize: '0.75rem', color: '#9ca3af', maxWidth: '180px', lineHeight: 1.4, display: 'block' }}>
+                          {step.desc}
+                        </span>
+                      </div>
                     </div>
                   )
                 })}
@@ -356,13 +326,7 @@ export default function OrderTrackingPage() {
           </div>
 
           {/* Grid de 2 Columnas con Detalles de la Orden */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '2rem',
-            }}
-          >
+          <div className="tracking-details-grid">
             {/* Columna Izquierda: Artículos Comprados */}
             <div className="admin-panel-card" style={{ padding: '1.75rem' }}>
               <div className="panel-card-header" style={{ marginBottom: '1.25rem' }}>
