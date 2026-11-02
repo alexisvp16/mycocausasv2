@@ -1,6 +1,5 @@
 import React from 'react'
 import AboutSection from '../components/about/AboutSection'
-import BiotechProcess from '../components/science/BiotechProcess'
 import MetricsBar from '../components/science/MetricsBar'
 
 export default function AboutPage() {
@@ -19,7 +18,6 @@ export default function AboutPage() {
       </div>
 
       <AboutSection />
-      <BiotechProcess />
       <MetricsBar />
     </div>
   )
