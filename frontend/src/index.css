@@ -70,6 +70,7 @@ textarea {
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 a {
@@ -79,9 +80,10 @@ a {
 
 button {
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 ::selection {
-  background: #c4a36a;
-  color: #10110f;
+  background: rgba(0, 245, 160, 0.28);
+  color: #00f5a0;
 }
