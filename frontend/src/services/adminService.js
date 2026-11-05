@@ -42,7 +42,7 @@ const STORAGE_PREFIX = 'myco_admin_'
 
 function loadFromStorage(key, fallback) {
   try {
-    const raw = sessionStorage.getItem(STORAGE_PREFIX + key)
+    const raw = localStorage.getItem(STORAGE_PREFIX + key) || sessionStorage.getItem(STORAGE_PREFIX + key)
     return raw ? JSON.parse(raw) : fallback
   } catch {
     return fallback
@@ -51,6 +51,7 @@ function loadFromStorage(key, fallback) {
 
 function saveToStorage(key, data) {
   try {
+    localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(data))
     sessionStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(data))
   } catch {
     // Storage deshabilitado
@@ -65,6 +66,8 @@ function getAuthHeaders() {
   }
   return headers
 }
+
+let inFlightFetch = null
 
 export const adminService = {
   /**
@@ -84,55 +87,54 @@ export const adminService = {
 
   /**
    * Sincroniza pedidos, productos, lotes y usuarios directamente desde el backend en tiempo real
+   * Optimizado con deduplicación en vuelo y división inteligente entre storefront y admin.
    */
   async fetchFromBackend() {
-    try {
-      const headers = getAuthHeaders()
+    if (inFlightFetch) {
+      return inFlightFetch
+    }
 
-      const [ordersRes, prodsRes, invRes, usersRes, couponsRes] = await Promise.allSettled([
-        fetch(`${API_BASE_URL}/pedidos`, { headers }),
-        fetch(`${API_BASE_URL}/productos?all=true`, { headers }),
-        fetch(`${API_BASE_URL}/inventario/lotes`, { headers }),
-        fetch(`${API_BASE_URL}/admin/usuarios`, { headers }),
-        fetch(`${API_BASE_URL}/cupones`, { headers }),
-      ])
+    inFlightFetch = (async () => {
+      try {
+        const session = authService.getStoredSession()
+        const isAdmin = session?.user?.role === 'admin'
+        const headers = getAuthHeaders()
 
-      const result = {}
+        // Para visitantes de la tienda pública: solo consulta catálogo y cupones (alta velocidad en móviles)
+        // Para administradores autenticados: consulta además órdenes, inventario y usuarios
+        const prodsPromise = fetch(`${API_BASE_URL}/productos${isAdmin ? '?all=true' : ''}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null)
 
-      // Mapeo de pedidos desde MySQL
-      if (ordersRes.status === 'fulfilled' && ordersRes.value.ok) {
-        const json = await ordersRes.value.json()
-        if (json.success && Array.isArray(json.data)) {
-          const mappedOrders = json.data.map((o) => ({
-            id: o.numero_orden || `ORD-${o.id}`,
-            dbId: o.id,
-            customer: o.nombre_cliente,
-            phone: o.telefono_cliente,
-            email: o.email_cliente,
-            city: o.ciudad,
-            total: Number(o.total),
-            status: o.estado,
-            date: new Date(o.fecha_pedido).toLocaleDateString('es-PE', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            }),
-            paymentMethod: o.metodo_pago,
-            comprobanteUrl: o.comprobante_pago_url || null,
-            items: [],
-          }))
-          saveToStorage('orders', mappedOrders)
-          result.orders = mappedOrders
-        }
-      }
+        const couponsPromise = fetch(`${API_BASE_URL}/cupones`)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null)
 
-      // Mapeo de productos desde MySQL
-      if (prodsRes.status === 'fulfilled' && prodsRes.value.ok) {
-        const json = await prodsRes.value.json()
-        if (json.success && Array.isArray(json.data)) {
-          const mappedProds = json.data.map((p, index) => ({
+        const ordersPromise = isAdmin
+          ? fetch(`${API_BASE_URL}/pedidos`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+          : Promise.resolve(null)
+
+        const invPromise = isAdmin
+          ? fetch(`${API_BASE_URL}/inventario/lotes`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+          : Promise.resolve(null)
+
+        const usersPromise = isAdmin
+          ? fetch(`${API_BASE_URL}/admin/usuarios`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+          : Promise.resolve(null)
+
+        const [prodsJson, couponsJson, ordersJson, invJson, usersJson] = await Promise.all([
+          prodsPromise,
+          couponsPromise,
+          ordersPromise,
+          invPromise,
+          usersPromise,
+        ])
+
+        const result = {}
+
+        // Mapeo de productos desde MySQL
+        if (prodsJson && prodsJson.success && Array.isArray(prodsJson.data)) {
+          const mappedProds = prodsJson.data.map((p, index) => ({
             id: p.id,
             number: String(index + 1).padStart(2, '0'),
             name: p.nombre,
@@ -158,13 +160,36 @@ export const adminService = {
           saveToStorage('products', mappedProds)
           result.products = mappedProds
         }
-      }
 
-      // Mapeo de lotes desde MySQL
-      if (invRes.status === 'fulfilled' && invRes.value.ok) {
-        const json = await invRes.value.json()
-        if (json.success && Array.isArray(json.data)) {
-          const mappedInv = json.data.map((l) => ({
+        // Mapeo de pedidos desde MySQL (Solo si vino respuesta válida de admin)
+        if (ordersJson && ordersJson.success && Array.isArray(ordersJson.data)) {
+          const mappedOrders = ordersJson.data.map((o) => ({
+            id: o.numero_orden || `ORD-${o.id}`,
+            dbId: o.id,
+            customer: o.nombre_cliente,
+            phone: o.telefono_cliente,
+            email: o.email_cliente,
+            city: o.ciudad,
+            total: Number(o.total),
+            status: o.estado,
+            date: new Date(o.fecha_pedido).toLocaleDateString('es-PE', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            paymentMethod: o.metodo_pago,
+            comprobanteUrl: o.comprobante_pago_url || null,
+            items: [],
+          }))
+          saveToStorage('orders', mappedOrders)
+          result.orders = mappedOrders
+        }
+
+        // Mapeo de lotes desde MySQL
+        if (invJson && invJson.success && Array.isArray(invJson.data)) {
+          const mappedInv = invJson.data.map((l) => ({
             id: l.id,
             batchCode: l.codigo_lote,
             species: `${l.producto_nombre} (${l.nombre_cientifico})`,
@@ -179,13 +204,10 @@ export const adminService = {
           saveToStorage('inventory', mappedInv)
           result.inventory = mappedInv
         }
-      }
 
-      // Mapeo de usuarios desde MySQL
-      if (usersRes.status === 'fulfilled' && usersRes.value.ok) {
-        const json = await usersRes.value.json()
-        if (json.success && Array.isArray(json.data)) {
-          const mappedUsers = json.data.map((u) => ({
+        // Mapeo de usuarios desde MySQL
+        if (usersJson && usersJson.success && Array.isArray(usersJson.data)) {
+          const mappedUsers = usersJson.data.map((u) => ({
             id: u.id,
             name: u.nombre,
             email: u.email,
@@ -198,13 +220,10 @@ export const adminService = {
           saveToStorage('users', mappedUsers)
           result.users = mappedUsers
         }
-      }
 
-      // Mapeo de cupones de descuento desde MySQL
-      if (couponsRes.status === 'fulfilled' && couponsRes.value.ok) {
-        const json = await couponsRes.value.json()
-        if (json.success && Array.isArray(json.data)) {
-          const mappedCoupons = json.data.map((c) => ({
+        // Mapeo de cupones de descuento desde MySQL
+        if (couponsJson && couponsJson.success && Array.isArray(couponsJson.data)) {
+          const mappedCoupons = couponsJson.data.map((c) => ({
             id: c.id,
             codigo: c.codigo,
             descripcion: c.descripcion || '',
@@ -219,12 +238,23 @@ export const adminService = {
           saveToStorage('coupons', mappedCoupons)
           result.coupons = mappedCoupons
         }
-      }
 
-      return result
-    } catch {
-      return null
-    }
+        return result
+      } catch (err) {
+        console.warn('Error en fetchFromBackend:', err)
+        return {
+          products: adminService.getProducts(),
+          orders: adminService.getOrders(),
+          inventory: adminService.getInventory(),
+          users: adminService.getUsers(),
+          coupons: adminService.getCoupons(),
+        }
+      } finally {
+        inFlightFetch = null
+      }
+    })()
+
+    return inFlightFetch
   },
 
   // --- PEDIDOS ---
