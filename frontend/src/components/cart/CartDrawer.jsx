@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/useCart'
 import { formatImageUrl } from '../../utils/imageUrl'
 import { adminService } from '../../services/adminService'
+import { Hexagon, X, ShoppingBag, CreditCard, CheckCircle2 } from 'lucide-react'
 
 export default function CartDrawer() {
   const navigate = useNavigate()
@@ -54,22 +55,26 @@ export default function CartDrawer() {
       >
         <div className="drawer-header">
           <div className="drawer-title-box">
-            <span className="drawer-icon">⬡</span>
+            <span className="drawer-icon" style={{ display: 'inline-flex', alignItems: 'center' }}><Hexagon size={18} color="var(--neon-emerald)" /></span>
             <h3>ORDEN DE FÓRMULAS ({totalCartCount})</h3>
           </div>
           <button
             type="button"
             className="drawer-close-btn"
             onClick={() => setIsCartOpen(false)}
+            aria-label="Cerrar carrito"
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
         <div className="drawer-body">
           {cart.length === 0 ? (
             <div className="empty-cart-state">
-              <span className="empty-icon">⁕</span>
+              <span className="empty-icon" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ShoppingBag size={48} color="var(--neon-emerald)" style={{ opacity: 0.6 }} />
+              </span>
               <p>Tu orden de formulaciones está vacía.</p>
               <Link
                 to="/productos"
@@ -220,8 +225,8 @@ export default function CartDrawer() {
             </div>
             <div className="shipping-notice">
               {finalPrice >= 150 ? (
-                <span className="free-shipping">
-                  ✓ Califica para Envío Gratis en Lima
+                <span className="free-shipping" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <CheckCircle2 size={13} /> Califica para Envío Gratis en Lima
                 </span>
               ) : (
                 <span>Envío calculado al confirmar por WhatsApp</span>
@@ -246,7 +251,8 @@ export default function CartDrawer() {
                 navigate('/checkout')
               }}
             >
-              <span>💳 Proceder al Pago / Finalizar Compra</span>
+              <CreditCard size={16} />
+              <span>Proceder al Pago / Finalizar Compra</span>
               <span>↗</span>
             </button>
             <button

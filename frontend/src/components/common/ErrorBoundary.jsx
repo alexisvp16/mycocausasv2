@@ -1,4 +1,5 @@
 import React from 'react'
+import { AlertTriangle } from 'lucide-react'
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -50,11 +51,12 @@ export class ErrorBoundary extends React.Component {
           >
             <div
               style={{
-                fontSize: '2.5rem',
+                display: 'flex',
+                justifyContent: 'center',
                 marginBottom: '1rem',
               }}
             >
-              ⚠️
+              <AlertTriangle size={42} color="#f87171" />
             </div>
             <span
               style={{

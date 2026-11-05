@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 import { API_BASE_URL } from '../services/apiConfig'
+import { User, Package, RefreshCw, Zap, AlertTriangle, Calendar, MapPin, CreditCard, Truck, Activity, ShieldCheck, FlaskConical } from 'lucide-react'
 
 export default function AccountPage() {
   const { user, token, logout } = useAuth()
@@ -83,7 +84,9 @@ export default function AccountPage() {
         {/* Profile Header */}
         <div className="account-header-card">
           <div className="account-avatar-box">
-            <span className="account-avatar-glyph">🧬</span>
+            <span className="account-avatar-glyph" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              <User size={28} color="var(--neon-emerald)" />
+            </span>
           </div>
           <div className="account-header-info">
             <div className="role-tag-row">
@@ -109,7 +112,7 @@ export default function AccountPage() {
           <div className="account-orders-card">
             <div className="account-orders-header">
               <div className="account-orders-title">
-                <span style={{ fontSize: '20px' }}>📦</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center' }}><Package size={20} color="var(--neon-emerald)" /></span>
                 <h2>Mis Pedidos & Compras Realizadas</h2>
                 <span className="orders-count-badge">
                   {orders.length} {orders.length === 1 ? 'orden' : 'órdenes'}
@@ -121,18 +124,22 @@ export default function AccountPage() {
                 onClick={fetchOrders}
                 disabled={loadingOrders}
                 title="Actualizar estado de órdenes"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
               >
-                ↻ {loadingOrders ? 'Actualizando...' : 'Actualizar'}
+                <RefreshCw size={13} />
+                <span>{loadingOrders ? 'Actualizando...' : 'Actualizar'}</span>
               </button>
             </div>
 
             {loadingOrders ? (
               <div className="account-orders-loading">
-                <span className="text-neon">⚡ Consultando registros de pedidos en la red Myco...</span>
+                <span className="text-neon" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <Zap size={14} /> Consultando registros de pedidos en la red Myco...
+                </span>
               </div>
             ) : errorOrders ? (
               <div className="account-orders-empty">
-                <span className="empty-icon">⚠️</span>
+                <span className="empty-icon"><AlertTriangle size={36} color="#f87171" /></span>
                 <h3>Atención al consultar pedidos</h3>
                 <p>{errorOrders}</p>
                 <button type="button" className="btn-bio-secondary" onClick={fetchOrders}>
@@ -141,7 +148,7 @@ export default function AccountPage() {
               </div>
             ) : orders.length === 0 ? (
               <div className="account-orders-empty">
-                <span className="empty-icon">📦</span>
+                <span className="empty-icon"><Package size={36} color="var(--neon-emerald)" /></span>
                 <h3>Aún no has registrado pedidos con esta cuenta</h3>
                 <p>
                   Cuando realices una compra de nuestras fórmulas biotecnológicas, aquí
@@ -160,7 +167,10 @@ export default function AccountPage() {
                       <div className="order-item-head">
                         <div className="order-item-meta">
                           <span className="order-code-badge">{ord.numero_orden}</span>
-                          <span className="order-date-label">📅 {formatDate(ord.fecha_pedido)}</span>
+                          <span className="order-date-label">
+                            <Calendar size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+                            {formatDate(ord.fecha_pedido)}
+                          </span>
                         </div>
                         <span className={`status-pill ${statusClass}`}>
                           ● {ord.estado || 'Pendiente'}
@@ -178,7 +188,8 @@ export default function AccountPage() {
                             Dirección de Envío
                           </span>
                           <span className="info-val">
-                            📍 {ord.direccion_envio}
+                            <MapPin size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+                            {ord.direccion_envio}
                             {ord.ciudad ? `, ${ord.ciudad}` : ''}
                             {ord.departamento ? ` - ${ord.departamento}` : ''}
                           </span>
@@ -187,7 +198,8 @@ export default function AccountPage() {
                         <div className="order-info-block">
                           <span className="info-label">Método y Estado de Pago</span>
                           <span className="info-val">
-                            💳 {ord.metodo_pago || 'Pago digital'} 
+                            <CreditCard size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+                            {ord.metodo_pago || 'Pago digital'}{' '} 
                             <span style={{ color: 'var(--text-muted)', marginLeft: '6px' }}>
                               ({ord.estado_pago || 'Pendiente'})
                             </span>
@@ -210,17 +222,19 @@ export default function AccountPage() {
                       <div className="order-item-foot">
                         <div className="order-tracking-info">
                           {ord.guia_tracking ? (
-                            <span>🚚 Guía Courier: <strong>{ord.guia_tracking}</strong></span>
+                            <span><Truck size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Guía Courier: <strong>{ord.guia_tracking}</strong></span>
                           ) : (
-                            <span>🛰️ Trazabilidad de laboratorio activa en tiempo real</span>
+                            <span><Activity size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Trazabilidad de laboratorio activa en tiempo real</span>
                           )}
                         </div>
 
                         <Link
                           to={`/tracking/${encodeURIComponent(ord.numero_orden)}`}
                           className="btn-tracking-link"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                         >
-                          🛰️ Ver Tracking en Vivo (4 Estados) ↗
+                          <Activity size={14} />
+                          <span>Ver Tracking en Vivo (4 Estados) ↗</span>
                         </Link>
                       </div>
                     </div>
@@ -235,7 +249,7 @@ export default function AccountPage() {
         <div className="account-grid">
           <div className="account-card">
             <div className="card-top-header">
-              <span className="card-icon">🔐</span>
+              <span className="card-icon"><ShieldCheck size={20} color="var(--neon-emerald)" /></span>
               <h3>Parámetros de Seguridad de la Sesión</h3>
             </div>
             <div className="telemetry-list">
@@ -260,7 +274,7 @@ export default function AccountPage() {
 
           <div className="account-card">
             <div className="card-top-header">
-              <span className="card-icon">🍄</span>
+              <span className="card-icon"><FlaskConical size={20} color="var(--neon-emerald)" /></span>
               <h3>Acceso a Lotes & Trazabilidad</h3>
             </div>
             <div className="telemetry-list">
@@ -286,8 +300,9 @@ export default function AccountPage() {
                 Ver Catálogo de Fórmulas ↗
               </Link>
               {user?.role === 'admin' && (
-                <Link to="/admin" className="btn-bio-secondary admin-btn-glow">
-                  ⚡ Ingresar al Panel Administrativo ↗
+                <Link to="/admin" className="btn-bio-secondary admin-btn-glow" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <Zap size={14} />
+                  <span>Ingresar al Panel Administrativo ↗</span>
                 </Link>
               )}
             </div>

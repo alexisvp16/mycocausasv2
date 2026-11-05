@@ -1,4 +1,5 @@
 import React from 'react'
+import { DollarSign, Package, AlertTriangle, Users, Plus, FlaskConical, BarChart3, CheckCircle2 } from 'lucide-react'
 
 export default function DashboardView({
   metrics,
@@ -17,7 +18,7 @@ export default function DashboardView({
         <div className="admin-kpi-card highlight">
           <div className="kpi-top">
             <span className="kpi-label">INGRESOS TOTALES</span>
-            <span className="kpi-icon">💰</span>
+            <span className="kpi-icon"><DollarSign size={20} color="var(--neon-emerald)" /></span>
           </div>
           <span className="kpi-value text-neon">
             S/ {metrics.totalSales.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
@@ -28,7 +29,7 @@ export default function DashboardView({
         <div className="admin-kpi-card">
           <div className="kpi-top">
             <span className="kpi-label">PEDIDOS PENDIENTES</span>
-            <span className="kpi-icon">📦</span>
+            <span className="kpi-icon"><Package size={20} color="var(--neon-emerald)" /></span>
           </div>
           <span className="kpi-value">
             {metrics.pendingOrders}{' '}
@@ -40,7 +41,7 @@ export default function DashboardView({
         <div className="admin-kpi-card">
           <div className="kpi-top">
             <span className="kpi-label">LOTES BAJO STOCK</span>
-            <span className="kpi-icon">⚠️</span>
+            <span className="kpi-icon"><AlertTriangle size={20} color="#f87171" /></span>
           </div>
           <span className="kpi-value">
             {metrics.lowStockCount}{' '}
@@ -52,7 +53,7 @@ export default function DashboardView({
         <div className="admin-kpi-card">
           <div className="kpi-top">
             <span className="kpi-label">USUARIOS REGISTRADOS</span>
-            <span className="kpi-icon">👥</span>
+            <span className="kpi-icon"><Users size={20} color="var(--neon-emerald)" /></span>
           </div>
           <span className="kpi-value">{metrics.totalUsers}</span>
           <span className="kpi-note text-neon">100% verificados</span>
@@ -93,7 +94,10 @@ export default function DashboardView({
                 {recentOrders.length === 0 ? (
                   <tr>
                     <td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: '#9ca3af' }}>
-                      📦 Aún no hay pedidos registrados. Cuando tus clientes compren en la tienda, aparecerán aquí en tiempo real.
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <Package size={18} color="var(--neon-emerald)" />
+                        <span>Aún no hay pedidos registrados. Cuando tus clientes compren en la tienda, aparecerán aquí en tiempo real.</span>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -177,22 +181,28 @@ export default function DashboardView({
                 type="button"
                 className="btn-quick-action"
                 onClick={() => onNavigateTab('productos')}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                🍄 Añadir Nueva Variedad / Fórmula
+                <Plus size={15} color="var(--neon-emerald)" />
+                <span>Añadir Nueva Variedad / Fórmula</span>
               </button>
               <button
                 type="button"
                 className="btn-quick-action"
                 onClick={() => onNavigateTab('inventario')}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                🔬 Registrar Certificado HPLC (COA)
+                <FlaskConical size={15} color="var(--neon-emerald)" />
+                <span>Registrar Certificado HPLC (COA)</span>
               </button>
               <button
                 type="button"
                 className="btn-quick-action"
                 onClick={() => onNavigateTab('reportes')}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                📊 Exportar Balance del Mes
+                <BarChart3 size={15} color="var(--neon-emerald)" />
+                <span>Exportar Balance del Mes</span>
               </button>
             </div>
           </div>

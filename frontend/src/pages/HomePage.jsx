@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Hero from '../components/hero/Hero'
 import MetricsBar from '../components/science/MetricsBar'
 import ProductCatalog from '../components/products/ProductCatalog'
+import { Package, Microscope, MessageSquare } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -33,7 +34,7 @@ export default function HomePage() {
           <Link to="/productos" className="portal-card">
             <div className="portal-card-top">
               <span className="portal-num">01</span>
-              <span className="portal-icon">📦</span>
+              <span className="portal-icon"><Package size={22} color="var(--neon-emerald)" /></span>
             </div>
             <h3 className="portal-card-title">Catálogo de Productos</h3>
             <p className="portal-card-desc">
@@ -47,7 +48,7 @@ export default function HomePage() {
           <Link to="/quienes-somos" className="portal-card">
             <div className="portal-card-top">
               <span className="portal-num">02</span>
-              <span className="portal-icon">🔬</span>
+              <span className="portal-icon"><Microscope size={22} color="var(--neon-emerald)" /></span>
             </div>
             <h3 className="portal-card-title">Quiénes Somos</h3>
             <p className="portal-card-desc">
@@ -61,7 +62,7 @@ export default function HomePage() {
           <Link to="/contacto" className="portal-card">
             <div className="portal-card-top">
               <span className="portal-num">03</span>
-              <span className="portal-icon">💬</span>
+              <span className="portal-icon"><MessageSquare size={22} color="var(--neon-emerald)" /></span>
             </div>
             <h3 className="portal-card-title">Contáctanos</h3>
             <p className="portal-card-desc">

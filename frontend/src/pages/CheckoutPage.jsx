@@ -6,6 +6,7 @@ import { formatImageUrl } from '../utils/imageUrl'
 import { authService } from '../services/authService'
 import { adminService } from '../services/adminService'
 import { API_BASE_URL } from '../services/apiConfig'
+import { UserCheck, Smartphone, Zap, Building2, CreditCard, Lock, Clock, AlertTriangle, CheckCircle2, ShoppingBag } from 'lucide-react'
 
 export default function CheckoutPage() {
   const navigate = useNavigate()
@@ -163,7 +164,9 @@ export default function CheckoutPage() {
   if (cart.length === 0) {
     return (
       <div className="checkout-empty-container" style={{ padding: '6rem 1rem', textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
-        <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🛒</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <ShoppingBag size={56} color="var(--neon-emerald)" style={{ opacity: 0.7 }} />
+        </div>
         <h2 style={{ color: '#fff', marginBottom: '0.75rem' }}>Tu Carrito está Vacío</h2>
         <p style={{ color: '#9ca3af', marginBottom: '1.75rem', lineHeight: 1.6 }}>
           No tienes formulaciones seleccionadas actualmente para procesar el pago. Explora nuestro catálogo y añade extractos miceliales.
@@ -202,7 +205,7 @@ export default function CheckoutPage() {
             gap: '0.75rem',
           }}
         >
-          <span>⚠️</span>
+          <AlertTriangle size={18} color="#f87171" />
           <span>{errorMessage}</span>
         </div>
       )}
@@ -223,7 +226,7 @@ export default function CheckoutPage() {
             >
               {isAuthenticated ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{ fontSize: '1.5rem' }}>🧑‍🔬</span>
+                  <UserCheck size={24} color="var(--neon-emerald)" />
                   <div>
                     <strong style={{ color: 'var(--neon-emerald)', fontSize: '0.95rem', display: 'block' }}>
                       Sesión activa: {user?.name || 'Cliente Myco'}
@@ -485,7 +488,9 @@ export default function CheckoutPage() {
               >
                 {formData.metodo_pago === 'Yape' && (
                   <div>
-                    <strong style={{ color: '#fff', display: 'block', marginBottom: '4px' }}>📱 Pago mediante Yape:</strong>
+                    <strong style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                      <Smartphone size={16} color="var(--neon-emerald)" /> Pago mediante Yape:
+                    </strong>
                     <span>Número Yape: <strong style={{ color: 'var(--neon-emerald)', fontFamily: 'var(--font-mono)' }}>937 189 745</strong></span><br />
                     <span>Titular: <strong>Alexis Vela // Myco Causas Lab</strong></span><br />
                     <span style={{ color: '#9ca3af' }}>Al generar la orden, tu pedido quedará en estado <em>Pendiente</em> mientras se verifica tu captura de pantalla o abono.</span>
@@ -494,7 +499,9 @@ export default function CheckoutPage() {
 
                 {formData.metodo_pago === 'Plin' && (
                   <div>
-                    <strong style={{ color: '#fff', display: 'block', marginBottom: '4px' }}>⚡ Pago mediante Plin:</strong>
+                    <strong style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                      <Zap size={16} color="var(--neon-emerald)" /> Pago mediante Plin:
+                    </strong>
                     <span>Número Plin: <strong style={{ color: 'var(--neon-emerald)', fontFamily: 'var(--font-mono)' }}>937 189 745</strong> (Interbank / BBVA / Scotiabank)</span><br />
                     <span>Titular: <strong>Alexis Vela // Myco Causas</strong></span>
                   </div>
@@ -502,7 +509,9 @@ export default function CheckoutPage() {
 
                 {formData.metodo_pago === 'Transferencia BCP' && (
                   <div>
-                    <strong style={{ color: '#fff', display: 'block', marginBottom: '4px' }}>🏦 Banco de Crédito del Perú (BCP):</strong>
+                    <strong style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                      <Building2 size={16} color="var(--neon-emerald)" /> Banco de Crédito del Perú (BCP):
+                    </strong>
                     <span>Cuenta Corriente Soles: <strong style={{ color: 'var(--neon-emerald)', fontFamily: 'var(--font-mono)' }}>191-98765432-0-12</strong></span><br />
                     <span>CCI: <strong style={{ color: 'var(--neon-emerald)', fontFamily: 'var(--font-mono)' }}>00219100987654320128</strong></span><br />
                     <span>Razón Social: <strong>MYCO CAUSAS S.A.C.</strong></span>
@@ -511,7 +520,9 @@ export default function CheckoutPage() {
 
                 {formData.metodo_pago === 'Transferencia Interbank' && (
                   <div>
-                    <strong style={{ color: '#fff', display: 'block', marginBottom: '4px' }}>🏦 Interbank:</strong>
+                    <strong style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                      <Building2 size={16} color="var(--neon-emerald)" /> Interbank:
+                    </strong>
                     <span>Cuenta Soles: <strong style={{ color: 'var(--neon-emerald)', fontFamily: 'var(--font-mono)' }}>200-3001234567</strong></span><br />
                     <span>CCI: <strong style={{ color: 'var(--neon-emerald)', fontFamily: 'var(--font-mono)' }}>00320000300123456745</strong></span>
                   </div>
@@ -519,7 +530,9 @@ export default function CheckoutPage() {
 
                 {formData.metodo_pago === 'Tarjeta' && (
                   <div>
-                    <strong style={{ color: '#fff', display: 'block', marginBottom: '4px' }}>💳 Pago con Tarjeta de Débito / Crédito:</strong>
+                    <strong style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                      <CreditCard size={16} color="var(--neon-emerald)" /> Pago con Tarjeta de Débito / Crédito:
+                    </strong>
                     <span>Aceptamos Visa, Mastercard, American Express y Diners. La orden se generará y podrás coordinar el link de pago o pos contraentrega.</span>
                   </div>
                 )}
@@ -693,7 +706,10 @@ export default function CheckoutPage() {
                 }}
               >
                 {isSubmitting ? (
-                  <span>⏳ Registrando tu pedido en base de datos...</span>
+                  <>
+                    <Clock size={16} />
+                    <span>Registrando tu pedido en base de datos...</span>
+                  </>
                 ) : (
                   <>
                     <span>Confirmar Pedido & Ir al Tracking</span>
@@ -702,8 +718,9 @@ export default function CheckoutPage() {
                 )}
               </button>
 
-              <div style={{ marginTop: '1.25rem', textAlign: 'center', fontSize: '0.75rem', color: '#6b7280' }}>
-                🔒 Transacción Cifrada • Certificado de Pureza HPLC Garantizado
+              <div style={{ marginTop: '1.25rem', textAlign: 'center', fontSize: '0.75rem', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <Lock size={13} color="var(--neon-emerald)" />
+                <span>Transacción Cifrada • Certificado de Pureza HPLC Garantizado</span>
               </div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import React from 'react'
 import ContactForm from './ContactForm'
+import { MessageSquare, MapPin, Mail, Clock } from 'lucide-react'
 
 export default function ContactSection() {
   return (
@@ -22,7 +23,7 @@ export default function ContactSection() {
               rel="noreferrer"
               className="contact-card whatsapp"
             >
-              <div className="contact-card-icon">💬</div>
+              <div className="contact-card-icon"><MessageSquare size={22} color="var(--neon-emerald)" /></div>
               <div>
                 <h4>WhatsApp Oficial</h4>
                 <p>Respuesta rápida y asesoría guiada</p>
@@ -31,7 +32,7 @@ export default function ContactSection() {
             </a>
 
             <div className="contact-card">
-              <div className="contact-card-icon">📍</div>
+              <div className="contact-card-icon"><MapPin size={22} color="var(--neon-emerald)" /></div>
               <div>
                 <h4>Laboratorio & Despachos</h4>
                 <p>Lima, Perú · Envíos certificados a todo el país</p>
@@ -40,7 +41,7 @@ export default function ContactSection() {
             </div>
 
             <div className="contact-card">
-              <div className="contact-card-icon">✉️</div>
+              <div className="contact-card-icon"><Mail size={22} color="var(--neon-emerald)" /></div>
               <div>
                 <h4>Correo Institucional</h4>
                 <p>Consultas técnicas y colaboraciones</p>
@@ -49,7 +50,7 @@ export default function ContactSection() {
             </div>
 
             <div className="contact-card">
-              <div className="contact-card-icon">⏱️</div>
+              <div className="contact-card-icon"><Clock size={22} color="var(--neon-emerald)" /></div>
               <div>
                 <h4>Horario de Atención</h4>
                 <p>Lunes a Sábado: 9:00 AM - 7:00 PM</p>

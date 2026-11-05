@@ -1,6 +1,7 @@
 import React from 'react'
 import { useCart } from '../../context/useCart'
 import { formatImageUrl } from '../../utils/imageUrl'
+import { FlaskConical, X } from 'lucide-react'
 
 export default function ProductModal() {
   const { activeModalProduct, setActiveModalProduct, addToCart } = useCart()
@@ -50,7 +51,7 @@ export default function ProductModal() {
           onClick={() => setActiveModalProduct(null)}
           aria-label="Cerrar modal"
         >
-          ✕
+          <X size={18} />
         </button>
 
         <div className="modal-header">
@@ -71,7 +72,9 @@ export default function ProductModal() {
                   }}
                 />
               ) : (
-                <div style={{ fontSize: '4rem', textAlign: 'center', padding: '3rem 0' }}>🍄</div>
+                <div style={{ display: 'grid', placeItems: 'center', height: '220px', background: 'rgba(0, 245, 160, 0.04)', borderRadius: '8px', border: '1px dashed var(--border-bio)' }}>
+                  <FlaskConical size={52} color="var(--neon-emerald)" style={{ opacity: 0.8 }} />
+                </div>
               )}
             </div>
 

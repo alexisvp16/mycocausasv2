@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { adminService } from '../../services/adminService'
 import { useCart } from '../../context/useCart'
 import { formatImageUrl } from '../../utils/imageUrl'
+import { FlaskConical, Microscope, Sprout, Dna, ArrowUpRight } from 'lucide-react'
 
 export default function Hero() {
   const [activeHeroIdx, setActiveHeroIdx] = useState(0)
@@ -116,17 +117,17 @@ export default function Hero() {
           <div className="hero-clean-welcome">
             <div className="clean-pillars-grid">
               <div className="pillar-mini-card">
-                <span className="pillar-icon">⚗️</span>
+                <span className="pillar-icon"><FlaskConical size={24} color="var(--neon-emerald)" /></span>
                 <strong>Ultrasonido 28 kHz</strong>
                 <p>Cavitación controlada para liberar compuestos intracelulares con máxima biodisponibilidad.</p>
               </div>
               <div className="pillar-mini-card">
-                <span className="pillar-icon">🔬</span>
+                <span className="pillar-icon"><Microscope size={24} color="var(--neon-emerald)" /></span>
                 <strong>Pureza HPLC & COA</strong>
                 <p>Estandarización analítica garantizando alta pureza en beta-glucanos y terpenos activos.</p>
               </div>
               <div className="pillar-mini-card">
-                <span className="pillar-icon">🌱</span>
+                <span className="pillar-icon"><Sprout size={24} color="var(--neon-emerald)" /></span>
                 <strong>Fruto 100% Puro</strong>
                 <p>Cultivos orgánicos certificados sin rellenos de almidón ni granos residuales.</p>
               </div>
@@ -176,7 +177,9 @@ export default function Hero() {
                 <div className="bio-ring outer-ring" />
                 <div className="bio-ring middle-ring" />
                 <div className="bio-core">
-                  <span className="core-glyph">🍄</span>
+                  <span className="core-glyph" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Dna size={44} color="var(--neon-emerald)" />
+                  </span>
                   <span className="core-caption">MYCO CAUSAS</span>
                 </div>
               </div>

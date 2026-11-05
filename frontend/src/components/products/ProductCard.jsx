@@ -1,6 +1,7 @@
 import React from 'react'
 import { useCart } from '../../context/useCart'
 import { formatImageUrl } from '../../utils/imageUrl'
+import { Info, Plus } from 'lucide-react'
 
 export default function ProductCard({ item }) {
   const { addToCart, setActiveModalProduct } = useCart()
@@ -52,7 +53,7 @@ export default function ProductCard({ item }) {
               className="btn-add-cart"
               onClick={() => addToCart(item)}
             >
-              + Añadir
+              <Plus size={13} /> Añadir
             </button>
             <button
               type="button"
@@ -61,7 +62,7 @@ export default function ProductCard({ item }) {
               title="Ver análisis de laboratorio"
               aria-label="Ver análisis de laboratorio"
             >
-              ℹ
+              <Info size={15} />
             </button>
           </div>
         </div>

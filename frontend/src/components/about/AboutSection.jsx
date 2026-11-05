@@ -1,5 +1,6 @@
 import React from 'react'
 import logoImg from '../../assets/logo.png'
+import { Microscope, Sprout, Users } from 'lucide-react'
 
 export default function AboutSection() {
   return (
@@ -42,7 +43,7 @@ export default function AboutSection() {
 
           <div className="about-pillars-grid">
             <div className="about-pillar-card">
-              <div className="pillar-icon">🔬</div>
+              <div className="pillar-icon"><Microscope size={24} color="var(--neon-emerald)" /></div>
               <h4>Rigor de Laboratorio</h4>
               <p>
                 Estandarización precisa de beta-glucanos y pureza verificada con tecnología HPLC.
@@ -50,7 +51,7 @@ export default function AboutSection() {
             </div>
 
             <div className="about-pillar-card">
-              <div className="pillar-icon">🌱</div>
+              <div className="pillar-icon"><Sprout size={24} color="var(--neon-emerald)" /></div>
               <h4>100% Cuerpos Fructíferos</h4>
               <p>
                 Sin micelio en grano, sin rellenos de almidón ni avena. Concentración auténtica.
@@ -58,7 +59,7 @@ export default function AboutSection() {
             </div>
 
             <div className="about-pillar-card">
-              <div className="pillar-icon">🤝</div>
+              <div className="pillar-icon"><Users size={24} color="var(--neon-emerald)" /></div>
               <h4>Comunidad & Asesoría</h4>
               <p>
                 Acompañamiento personalizado para integrar los hongos funcionales a tu rutina diaria.

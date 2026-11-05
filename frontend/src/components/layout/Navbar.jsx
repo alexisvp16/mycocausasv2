@@ -3,6 +3,7 @@ import { NavLink, Link } from 'react-router-dom'
 import logoImg from '../../assets/logo.png'
 import { useCart } from '../../context/useCart'
 import { useAuth } from '../../context/useAuth'
+import { Zap, User, Lock, Hexagon, Menu, X } from 'lucide-react'
 
 export default function Navbar() {
   const { totalCartCount, setIsCartOpen } = useCart()
@@ -68,21 +69,21 @@ export default function Navbar() {
         <div className="mobile-auth-links">
           {isAuthenticated && user?.role === 'admin' && (
             <Link to="/admin" className="nav-auth-btn admin-glow" onClick={closeMenu}>
-              <span className="auth-icon">⚡</span>
+              <span className="auth-icon"><Zap size={14} /></span>
               <span className="auth-text">Panel Admin</span>
             </Link>
           )}
 
           {isAuthenticated ? (
             <Link to="/cuenta" className="nav-auth-btn user-active" onClick={closeMenu}>
-              <span className="auth-icon">🧬</span>
+              <span className="auth-icon"><User size={14} /></span>
               <span className="auth-user-name">
                 {user?.name?.split(' ')[0] || 'Mi Cuenta'}
               </span>
             </Link>
           ) : (
             <Link to="/login" className="nav-auth-btn" onClick={closeMenu}>
-              <span className="auth-icon">🔒</span>
+              <span className="auth-icon"><Lock size={14} /></span>
               <span className="auth-text">Ingresar</span>
             </Link>
           )}
@@ -92,21 +93,21 @@ export default function Navbar() {
       <div className="nav-actions">
         {isAuthenticated && user?.role === 'admin' && (
           <Link to="/admin" className="nav-auth-btn admin-glow desktop-only" title="Panel Administrativo del Laboratorio">
-            <span className="auth-icon">⚡</span>
+            <span className="auth-icon"><Zap size={14} /></span>
             <span className="auth-text">Panel Admin</span>
           </Link>
         )}
 
         {isAuthenticated ? (
           <Link to="/cuenta" className="nav-auth-btn user-active desktop-only" title="Ver mi cuenta">
-            <span className="auth-icon">🧬</span>
+            <span className="auth-icon"><User size={14} /></span>
             <span className="auth-user-name">
               {user?.name?.split(' ')[0] || 'Mi Cuenta'}
             </span>
           </Link>
         ) : (
           <Link to="/login" className="nav-auth-btn desktop-only" title="Iniciar sesión seguro">
-            <span className="auth-icon">🔒</span>
+            <span className="auth-icon"><Lock size={14} /></span>
             <span className="auth-text">Ingresar</span>
           </Link>
         )}
@@ -117,7 +118,7 @@ export default function Navbar() {
           onClick={() => { setIsCartOpen(true); closeMenu() }}
           aria-label="Abrir carrito de compras"
         >
-          <span className="cart-icon-dot">⬡</span>
+          <span className="cart-icon-dot" style={{ display: 'inline-flex', alignItems: 'center' }}><Hexagon size={14} /></span>
           <span className="cart-label">ORDEN</span>
           <span className="cart-badge">{totalCartCount}</span>
         </button>
@@ -128,7 +129,7 @@ export default function Navbar() {
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label={mobileMenuOpen ? 'Cerrar navegación móvil' : 'Abrir navegación móvil'}
         >
-          {mobileMenuOpen ? '✕' : '☰'}
+          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
     </header>

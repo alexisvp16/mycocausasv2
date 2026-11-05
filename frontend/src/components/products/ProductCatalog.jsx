@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { adminService } from '../../services/adminService'
 import { useAuth } from '../../context/useAuth'
 import ProductCard from './ProductCard'
+import { FlaskConical, Zap } from 'lucide-react'
 
 export default function ProductCatalog({ title, subtitle }) {
   const [activeFilter, setActiveFilter] = useState('')
@@ -111,7 +112,9 @@ export default function ProductCatalog({ title, subtitle }) {
           className="glass-card"
           style={{ padding: '3.5rem 2rem', textAlign: 'center', margin: '2rem 0' }}
         >
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🍄</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+            <FlaskConical size={48} color="var(--neon-emerald)" style={{ opacity: 0.8 }} />
+          </div>
           <h3
             style={{
               fontSize: '1.4rem',
@@ -181,7 +184,8 @@ export default function ProductCatalog({ title, subtitle }) {
                   fontSize: '0.85rem',
                 }}
               >
-                <span>⚡ Ir al Panel para Registrar Nuevos Productos</span>
+                <Zap size={14} />
+                <span>Ir al Panel para Registrar Nuevos Productos</span>
                 <span>→</span>
               </Link>
             </div>

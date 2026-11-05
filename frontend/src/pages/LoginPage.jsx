@@ -8,6 +8,7 @@ import {
   evaluatePasswordSecurity,
 } from '../services/securityUtils'
 import logoImg from '../assets/logo.png'
+import { Mail, Lock, Eye, EyeOff, User, Smartphone, Key, ShieldAlert, AlertTriangle, Shield, Clock } from 'lucide-react'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -163,7 +164,7 @@ export default function LoginPage() {
         {/* Lockout Warning Banner */}
         {lockoutStatus.isLocked && (
           <div className="auth-lockout-banner">
-            <span className="lockout-icon">⛔</span>
+            <span className="lockout-icon"><ShieldAlert size={22} color="#f87171" /></span>
             <div>
               <strong>ACCESO TEMPORALMENTE BLOQUEADO</strong>
               <p>
@@ -180,7 +181,7 @@ export default function LoginPage() {
         {/* Error Feedback Banners */}
         {(error || clientErrors.length > 0) && (
           <div className="auth-error-banner">
-            <span className="error-icon">⚠️</span>
+            <span className="error-icon"><AlertTriangle size={18} color="#f87171" /></span>
             <div className="error-messages-list">
               {error && <p>{error}</p>}
               {clientErrors.map((err, idx) => (
@@ -196,7 +197,7 @@ export default function LoginPage() {
             <div className="auth-input-group">
               <label htmlFor="login-email">Correo Electrónico</label>
               <div className="input-with-icon">
-                <span className="field-icon">✉</span>
+                <span className="field-icon"><Mail size={16} /></span>
                 <input
                   id="login-email"
                   type="email"
@@ -226,7 +227,7 @@ export default function LoginPage() {
                 </button>
               </div>
               <div className="input-with-icon">
-                <span className="field-icon">🔒</span>
+                <span className="field-icon"><Lock size={16} /></span>
                 <input
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
@@ -244,7 +245,7 @@ export default function LoginPage() {
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
                   tabIndex={-1}
                 >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
@@ -282,7 +283,7 @@ export default function LoginPage() {
             <div className="auth-input-group">
               <label htmlFor="reg-name">Nombre y Apellidos</label>
               <div className="input-with-icon">
-                <span className="field-icon">👤</span>
+                <span className="field-icon"><User size={16} /></span>
                 <input
                   id="reg-name"
                   type="text"
@@ -299,7 +300,7 @@ export default function LoginPage() {
             <div className="auth-input-group">
               <label htmlFor="reg-email">Correo Electrónico</label>
               <div className="input-with-icon">
-                <span className="field-icon">✉</span>
+                <span className="field-icon"><Mail size={16} /></span>
                 <input
                   id="reg-email"
                   type="email"
@@ -316,7 +317,7 @@ export default function LoginPage() {
             <div className="auth-input-group">
               <label htmlFor="reg-phone">Teléfono / WhatsApp</label>
               <div className="input-with-icon">
-                <span className="field-icon">📱</span>
+                <span className="field-icon"><Smartphone size={16} /></span>
                 <input
                   id="reg-phone"
                   type="tel"
@@ -332,7 +333,7 @@ export default function LoginPage() {
             <div className="auth-input-group">
               <label htmlFor="reg-password">Contraseña Maestra</label>
               <div className="input-with-icon">
-                <span className="field-icon">🔒</span>
+                <span className="field-icon"><Lock size={16} /></span>
                 <input
                   id="reg-password"
                   type={showRegPassword ? 'text' : 'password'}
@@ -350,7 +351,7 @@ export default function LoginPage() {
                   aria-label={showRegPassword ? 'Ocultar' : 'Mostrar'}
                   tabIndex={-1}
                 >
-                  {showRegPassword ? '👁️' : '👁️‍🗨️'}
+                  {showRegPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
 
@@ -407,7 +408,7 @@ export default function LoginPage() {
             <div className="auth-input-group">
               <label htmlFor="reg-confirm-password">Confirmar Contraseña</label>
               <div className="input-with-icon">
-                <span className="field-icon">🔑</span>
+                <span className="field-icon"><Key size={16} /></span>
                 <input
                   id="reg-confirm-password"
                   type={showRegPassword ? 'text' : 'password'}
@@ -440,10 +441,10 @@ export default function LoginPage() {
         {/* Security Parameters Footer */}
         <div className="login-security-footer">
           <div className="security-icon-row">
-            <span>🛡️ Encriptación SHA-256</span>
-            <span>⏱️ Time-Out por Inactividad (30 min)</span>
-            <span>🚫 Anti Brute-Force Rate Limiter</span>
-            <span>🔒 Sanitización XSS</span>
+            <span><Shield size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Encriptación SHA-256</span>
+            <span><Clock size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Time-Out (30 min)</span>
+            <span><ShieldAlert size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Anti Brute-Force</span>
+            <span><Lock size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Sanitización XSS</span>
           </div>
           <p className="security-legal">
             Tus datos de salud y pedidos son confidenciales bajo la Ley N° 29733 de

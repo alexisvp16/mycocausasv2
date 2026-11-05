@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { formatImageUrl } from '../utils/imageUrl'
 import { API_BASE_URL } from '../services/apiConfig'
+import { ClipboardList, FlaskConical, Truck, CheckCircle2, Search, Clock, Sparkles, MessageSquare } from 'lucide-react'
 
 export default function OrderTrackingPage() {
   const { orderCode } = useParams()
@@ -70,28 +71,28 @@ export default function OrderTrackingPage() {
       num: 1,
       title: 'Pedido Recibido',
       desc: 'Verificación de datos y confirmación de pago',
-      icon: '📝',
+      icon: <ClipboardList size={18} />,
     },
     {
       key: 'En Preparación',
       num: 2,
       title: 'En Preparación',
       desc: 'Formulación y empaque en laboratorio',
-      icon: '🔬',
+      icon: <FlaskConical size={18} />,
     },
     {
       key: 'Enviado',
       num: 3,
       title: 'En Camino',
       desc: 'Despachado con courier y en ruta de entrega',
-      icon: '🚚',
+      icon: <Truck size={18} />,
     },
     {
       key: 'Entregado',
       num: 4,
       title: 'Entregado',
       desc: 'Paquete recibido satisfactoriamente',
-      icon: '✅',
+      icon: <CheckCircle2 size={18} />,
     },
   ]
 
@@ -140,7 +141,9 @@ export default function OrderTrackingPage() {
         </div>
       ) : error ? (
         <div className="glass-card" style={{ padding: '3.5rem 2rem', textAlign: 'center', borderColor: '#ef4444' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+            <Search size={44} color="#f87171" />
+          </div>
           <h3 style={{ color: '#f87171', marginBottom: '0.5rem' }}>No se encontró el pedido</h3>
           <p style={{ color: '#9ca3af', maxWidth: '520px', margin: '0 auto 1.5rem' }}>{error}</p>
           <Link to="/productos" className="btn-bio-primary">
@@ -259,7 +262,7 @@ export default function OrderTrackingPage() {
                           boxShadow: isCurrent ? '0 0 25px rgba(0, 245, 160, 0.5)' : 'none',
                         }}
                       >
-                        {isCompleted ? '✓' : step.icon}
+                        {isCompleted ? <CheckCircle2 size={16} /> : step.icon}
                       </div>
 
                       <div className="tracking-step-text-wrap">
@@ -296,12 +299,12 @@ export default function OrderTrackingPage() {
                 gap: '1rem',
               }}
             >
-              <span style={{ fontSize: '1.8rem' }}>
-                {order.estado === 'Pendiente' && '⏳'}
-                {order.estado === 'En Preparación' && '⚗️'}
-                {order.estado === 'Enviado' && '🚚'}
-                {order.estado === 'Entregado' && '🎉'}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {order.estado === 'Pendiente' && <Clock size={28} color="#fbbf24" />}
+                {order.estado === 'En Preparación' && <FlaskConical size={28} color="#c084fc" />}
+                {order.estado === 'Enviado' && <Truck size={28} color="#60a5fa" />}
+                {order.estado === 'Entregado' && <Sparkles size={28} color="var(--neon-emerald)" />}
+              </div>
               <div>
                 <strong style={{ color: '#fff', fontSize: '0.95rem', display: 'block', marginBottom: '2px' }}>
                   {order.estado === 'Pendiente' && 'Estamos validando tu pago y alistando la orden'}
@@ -471,7 +474,8 @@ export default function OrderTrackingPage() {
                     fontSize: '0.9rem',
                   }}
                 >
-                  <span>💬 Consultar este Pedido por WhatsApp</span>
+                  <MessageSquare size={16} />
+                  <span>Consultar este Pedido por WhatsApp</span>
                   <span>↗</span>
                 </a>
 

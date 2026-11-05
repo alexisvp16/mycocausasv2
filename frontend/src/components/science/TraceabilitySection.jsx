@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { adminService } from '../../services/adminService'
 import { useCart } from '../../context/useCart'
+import { ShoppingCart, Tag } from 'lucide-react'
 
 export default function TraceabilitySection() {
   const [couponCode, setCouponCode] = useState('')
@@ -111,9 +112,13 @@ export default function TraceabilitySection() {
                       fontSize: '0.8rem',
                       padding: '8px 16px',
                       cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
                     }}
                   >
-                    🛒 Abrir Mi Carrito con Descuento →
+                    <ShoppingCart size={14} />
+                    <span>Abrir Mi Carrito con Descuento →</span>
                   </button>
                 </>
               ) : (
@@ -127,7 +132,9 @@ export default function TraceabilitySection() {
 
         <div className="trace-badge-seal">
           <div className="seal-inner">
-            <span className="seal-star">🎁</span>
+            <span className="seal-star" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Tag size={26} color="var(--neon-emerald)" />
+            </span>
             <span className="seal-lab">MYCO PROMO</span>
             <span className="seal-year">DESCUENTO</span>
             <span className="seal-sub">CANJE ACTIVO</span>
