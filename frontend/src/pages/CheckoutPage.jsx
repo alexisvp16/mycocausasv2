@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/useCart'
 import { useAuth } from '../context/useAuth'
@@ -6,7 +6,22 @@ import { formatImageUrl } from '../utils/imageUrl'
 import { authService } from '../services/authService'
 import { adminService } from '../services/adminService'
 import { API_BASE_URL } from '../services/apiConfig'
-import { UserCheck, Smartphone, Zap, Building2, CreditCard, Lock, Clock, AlertTriangle, CheckCircle2, ShoppingBag } from 'lucide-react'
+import {
+  UserCheck,
+  Smartphone,
+  Zap,
+  Building2,
+  CreditCard,
+  Lock,
+  Clock,
+  AlertTriangle,
+  CheckCircle2,
+  ShoppingBag,
+  UploadCloud,
+  FileCheck,
+  X,
+  Image as ImageIcon
+} from 'lucide-react'
 
 export default function CheckoutPage() {
   const navigate = useNavigate()
@@ -39,6 +54,63 @@ export default function CheckoutPage() {
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+
+  // Estado para la captura / comprobante de pago
+  const [voucherFile, setVoucherFile] = useState(null)
+  const [voucherPreview, setVoucherPreview] = useState('')
+  const [voucherBase64, setVoucherBase64] = useState('')
+  const [isDragging, setIsDragging] = useState(false)
+  const fileInputRef = useRef(null)
+
+  const handleFileSelect = (file) => {
+    if (!file) return
+    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+      setErrorMessage('Por favor sube una captura válida en formato JPG, PNG, WEBP o PDF.')
+      return
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      setErrorMessage('La captura o comprobante no debe exceder los 15MB.')
+      return
+    }
+
+    setVoucherFile(file)
+    setErrorMessage('')
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const base64 = e.target.result
+      setVoucherBase64(base64)
+      setVoucherPreview(base64)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleRemoveVoucher = () => {
+    setVoucherFile(null)
+    setVoucherPreview('')
+    setVoucherBase64('')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setIsDragging(false)
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileSelect(e.dataTransfer.files[0])
+    }
+  }
 
   // Sincronizar datos si el usuario inicia sesión durante el checkout
   useEffect(() => {
@@ -117,6 +189,24 @@ export default function CheckoutPage() {
       const headers = { 'Content-Type': 'application/json' }
       if (authToken) headers['Authorization'] = `Bearer ${authToken}`
 
+      // Si el cliente adjuntó captura de pago, subirla o enviarla en base64
+      let comprobanteUrl = null
+      if (voucherBase64) {
+        try {
+          const compRes = await fetch(`${API_BASE_URL}/pedidos/upload-comprobante`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageBase64: voucherBase64 }),
+          })
+          const compData = await compRes.json()
+          if (compData.success && compData.comprobanteUrl) {
+            comprobanteUrl = compData.comprobanteUrl
+          }
+        } catch (compErr) {
+          console.warn('Aviso: Fallback a persistencia directa de comprobante:', compErr)
+        }
+      }
+
       const payload = {
         nombre_cliente: formData.nombre_cliente.trim(),
         email_cliente: formData.email_cliente.trim(),
@@ -126,6 +216,8 @@ export default function CheckoutPage() {
         direccion_envio: formData.direccion_envio.trim(),
         referencia_direccion: formData.referencia_direccion.trim() || null,
         metodo_pago: formData.metodo_pago,
+        comprobante_pago_url: comprobanteUrl,
+        comprobante_base64: voucherBase64 || null,
         subtotal: totalCartPrice,
         descuento: discountAmount,
         cupon_codigo: appliedCoupon ? appliedCoupon.codigo : null,
@@ -534,6 +626,143 @@ export default function CheckoutPage() {
                       <CreditCard size={16} color="var(--neon-emerald)" /> Pago con Tarjeta de Débito / Crédito:
                     </strong>
                     <span>Aceptamos Visa, Mastercard, American Express y Diners. La orden se generará y podrás coordinar el link de pago o pos contraentrega.</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Recuadro de Subida de Comprobante / Captura de Pago */}
+              <div
+                style={{
+                  marginTop: '1.25rem',
+                  padding: '1.25rem',
+                  borderRadius: '10px',
+                  border: isDragging ? '2px dashed var(--neon-emerald)' : '2px dashed rgba(0, 245, 160, 0.35)',
+                  background: isDragging ? 'rgba(0, 245, 160, 0.08)' : 'rgba(5, 12, 9, 0.6)',
+                  textAlign: 'center',
+                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                  position: 'relative',
+                  cursor: voucherPreview ? 'default' : 'pointer',
+                }}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => {
+                  if (!voucherPreview && fileInputRef.current) {
+                    fileInputRef.current.click()
+                  }
+                }}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,.pdf"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      handleFileSelect(e.target.files[0])
+                    }
+                  }}
+                />
+
+                {!voucherPreview ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '0.75rem 0' }}>
+                    <div
+                      style={{
+                        width: '46px',
+                        height: '46px',
+                        borderRadius: '50%',
+                        background: 'rgba(0, 245, 160, 0.12)',
+                        border: '1px solid rgba(0, 245, 160, 0.25)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--neon-emerald)',
+                        marginBottom: '2px',
+                      }}
+                    >
+                      <UploadCloud size={24} />
+                    </div>
+                    <strong style={{ color: '#fff', fontSize: '0.95rem' }}>
+                      Adjuntar Captura o Comprobante de Pago ({formData.metodo_pago})
+                    </strong>
+                    <p style={{ color: '#9ca3af', fontSize: '0.8rem', maxWidth: '420px', margin: 0, lineHeight: 1.4 }}>
+                      Arrastra aquí tu captura o <span style={{ color: 'var(--neon-emerald)', textDecoration: 'underline' }}>haz clic para seleccionar archivo</span>
+                    </p>
+                    <span style={{ fontSize: '0.72rem', color: '#6b7280', fontFamily: 'var(--font-mono)' }}>
+                      Formatos admitidos: JPG, PNG, WEBP o PDF (Máx. 15MB)
+                    </span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', textAlign: 'left', padding: '0.25rem' }}>
+                    {voucherFile && voucherFile.type.startsWith('image/') ? (
+                      <img
+                        src={voucherPreview}
+                        alt="Vista previa comprobante"
+                        style={{
+                          width: '70px',
+                          height: '70px',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          border: '1px solid var(--neon-emerald)',
+                          boxShadow: '0 0 14px rgba(0, 245, 160, 0.25)',
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '70px',
+                          height: '70px',
+                          borderRadius: '8px',
+                          background: 'rgba(0, 245, 160, 0.15)',
+                          border: '1px solid var(--neon-emerald)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'var(--neon-emerald)',
+                        }}
+                      >
+                        <FileCheck size={32} />
+                      </div>
+                    )}
+
+                    <div style={{ flex: 1, minWidth: '180px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                        <CheckCircle2 size={16} color="var(--neon-emerald)" />
+                        <strong style={{ color: 'var(--neon-emerald)', fontSize: '0.9rem' }}>
+                          Comprobante adjuntado con éxito
+                        </strong>
+                      </div>
+                      <span style={{ color: '#fff', fontSize: '0.85rem', display: 'block', wordBreak: 'break-all', fontWeight: 600 }}>
+                        {voucherFile?.name || 'captura_pago.jpg'}
+                      </span>
+                      <span style={{ color: '#9ca3af', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
+                        {voucherFile?.size ? `${(voucherFile.size / 1024).toFixed(0)} KB` : 'Listo'} • Se registrará junto a tu pedido
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRemoveVoucher()
+                      }}
+                      style={{
+                        padding: '7px 12px',
+                        background: 'rgba(239, 68, 68, 0.12)',
+                        border: '1px solid rgba(239, 68, 68, 0.35)',
+                        color: '#fca5a5',
+                        borderRadius: '6px',
+                        fontSize: '0.8rem',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        transition: 'all 0.2s',
+                      }}
+                      title="Quitar o cambiar captura"
+                    >
+                      <X size={14} /> Cambiar
+                    </button>
                   </div>
                 )}
               </div>

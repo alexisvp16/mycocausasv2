@@ -454,6 +454,25 @@ export default function OrderTrackingPage() {
                       Estado del pago: <strong>{order.estado_pago || 'Pendiente'}</strong>
                     </span>
                   </div>
+
+                  {order.comprobante_pago_url && (
+                    <div style={{ marginTop: '4px', padding: '10px 12px', background: 'rgba(0, 245, 160, 0.06)', borderRadius: '8px', border: '1px solid rgba(0, 245, 160, 0.25)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <CheckCircle2 size={15} color="var(--neon-emerald)" />
+                          <span style={{ fontSize: '0.8rem', color: '#fff', fontWeight: 600 }}>Captura de Pago Adjuntada</span>
+                        </div>
+                        <a
+                          href={formatImageUrl(order.comprobante_pago_url)}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ fontSize: '0.78rem', color: 'var(--neon-emerald)', textDecoration: 'underline', fontWeight: 600 }}
+                        >
+                          Ver Voucher ↗
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

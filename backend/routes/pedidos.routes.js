@@ -5,8 +5,60 @@
 
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 const db = require('../config/db');
 const { verifyToken, requireAdmin, optionalAuth } = require('../middlewares/authMiddleware');
+
+/**
+ * Función auxiliar para validar y persistir comprobante de pago en disco
+ */
+function saveComprobanteBase64(imageBase64) {
+  if (!imageBase64 || typeof imageBase64 !== 'string') return null;
+
+  let mimeType = 'image/png';
+  let base64Content = imageBase64;
+
+  if (imageBase64.includes(';base64,')) {
+    const parts = imageBase64.split(';base64,');
+    const prefix = parts[0];
+    base64Content = parts[1];
+    const mimeMatch = prefix.match(/data:([^;]+)/);
+    if (mimeMatch) {
+      mimeType = mimeMatch[1].toLowerCase();
+    }
+  }
+
+  let ext = mimeType.split('/')[1] || 'png';
+  if (ext.includes('+')) ext = ext.split('+')[0];
+  if (ext === 'jpeg') ext = 'jpg';
+
+  const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+  const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf'];
+
+  if (!ALLOWED_MIMES.includes(mimeType) && !ALLOWED_EXTS.includes(ext.toLowerCase())) {
+    throw new Error('Formato de comprobante no permitido. Solo se aceptan imágenes JPG, PNG, WEBP o PDF.');
+  }
+
+  const cleanBase64 = base64Content.replace(/\s/g, '');
+  const buffer = Buffer.from(cleanBase64, 'base64');
+
+  if (buffer.length > 15 * 1024 * 1024) {
+    throw new Error('El comprobante excede el tamaño máximo permitido (15MB).');
+  }
+
+  const safeName = `comprobante_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+  const uploadDir = path.join(__dirname, '..', 'uploads');
+
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const targetPath = path.join(uploadDir, safeName);
+  fs.writeFileSync(targetPath, buffer);
+
+  return `/uploads/${safeName}`;
+}
 
 /**
  * GET /api/pedidos
@@ -41,6 +93,7 @@ router.get('/', verifyToken, async (req, res) => {
           p.total,
           p.estado,
           p.guia_tracking,
+          p.comprobante_pago_url,
           p.fecha_pedido,
           COUNT(dp.id) AS total_items,
           COALESCE(SUM(dp.cantidad), 0) AS total_unidades,
@@ -70,6 +123,7 @@ router.get('/', verifyToken, async (req, res) => {
           p.total,
           p.estado,
           p.guia_tracking,
+          p.comprobante_pago_url,
           p.fecha_pedido,
           COUNT(dp.id) AS total_items,
           COALESCE(SUM(dp.cantidad), 0) AS total_unidades,
@@ -147,6 +201,41 @@ router.get('/:id', verifyToken, async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Error al obtener detalle de pedido.'
+    });
+  }
+});
+
+/**
+ * POST /api/pedidos/upload-comprobante
+ * Subir captura o comprobante de pago (Yape, Plin, Transferencia)
+ */
+router.post('/upload-comprobante', optionalAuth, async (req, res) => {
+  try {
+    const { imageBase64 } = req.body;
+    if (!imageBase64) {
+      return res.status(400).json({
+        success: false,
+        message: 'No se envió ninguna imagen o comprobante.'
+      });
+    }
+
+    const relativeUrl = saveComprobanteBase64(imageBase64);
+    const host = req.get('host') || 'localhost:5000';
+    const protocol = req.protocol || 'http';
+    const fullUrl = `${protocol}://${host}${relativeUrl}`;
+
+    return res.json({
+      success: true,
+      message: 'Comprobante de pago subido correctamente.',
+      comprobanteUrl: relativeUrl,
+      fullUrl,
+      relativeUrl
+    });
+  } catch (error) {
+    console.error('Error al subir comprobante de pago:', error);
+    return res.status(400).json({
+      success: false,
+      message: error.message || 'Error al procesar el comprobante de pago.'
     });
   }
 });
@@ -295,12 +384,21 @@ router.post('/', optionalAuth, async (req, res) => {
     // 3. Insertar cabecera de pedido
     const usuarioId = req.user ? req.user.id : null;
 
+    let finalComprobanteUrl = req.body.comprobante_pago_url || null;
+    if (req.body.comprobante_base64 && !finalComprobanteUrl) {
+      try {
+        finalComprobanteUrl = saveComprobanteBase64(req.body.comprobante_base64);
+      } catch (errComp) {
+        console.warn('Aviso: no se pudo guardar comprobante_base64:', errComp.message);
+      }
+    }
+
     const [pedidoResult] = await connection.query(
       `INSERT INTO pedidos (
         numero_orden, usuario_id, nombre_cliente, email_cliente, telefono_cliente,
         departamento, ciudad, direccion_envio, referencia_direccion, metodo_pago,
-        estado_pago, subtotal, descuento, cupon_codigo, costo_envio, total, estado, notas_cliente
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pendiente', ?, ?, ?, ?, ?, 'Pendiente', ?)`,
+        estado_pago, subtotal, descuento, cupon_codigo, costo_envio, total, estado, comprobante_pago_url, notas_cliente
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pendiente', ?, ?, ?, ?, ?, 'Pendiente', ?, ?)`,
       [
         numeroOrden,
         usuarioId,
@@ -317,6 +415,7 @@ router.post('/', optionalAuth, async (req, res) => {
         cuponCodigoValido,
         envio,
         totalFinal,
+        finalComprobanteUrl,
         notas_cliente || null
       ]
     );
@@ -464,6 +563,7 @@ router.get('/tracking/:codigoOrId', optionalAuth, async (req, res) => {
         p.total,
         p.estado,
         p.guia_tracking,
+        p.comprobante_pago_url,
         p.notas_cliente,
         p.fecha_pedido,
         p.updated_at

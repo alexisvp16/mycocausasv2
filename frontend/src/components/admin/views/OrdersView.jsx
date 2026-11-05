@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { formatImageUrl } from '../../../utils/imageUrl'
+import { Search, Eye, MessageSquare } from 'lucide-react'
 
 export default function OrdersView({ orders, onUpdateOrderStatus }) {
   const [filter, setFilter] = useState('TODOS')
@@ -18,7 +20,7 @@ export default function OrdersView({ orders, onUpdateOrderStatus }) {
       {/* Top Filter Bar */}
       <div className="admin-filter-bar">
         <div className="filter-search-box">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"><Search size={15} /></span>
           <input
             type="text"
             placeholder="Buscar por ID, cliente o teléfono..."
@@ -91,6 +93,30 @@ export default function OrdersView({ orders, onUpdateOrderStatus }) {
                     </td>
                     <td>
                       <span className="payment-badge">{ord.paymentMethod}</span>
+                      {ord.comprobanteUrl ? (
+                        <a
+                          href={formatImageUrl(ord.comprobanteUrl)}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '0.75rem',
+                            color: 'var(--neon-emerald)',
+                            marginTop: '6px',
+                            fontWeight: 600,
+                            textDecoration: 'underline',
+                          }}
+                          title="Abrir captura o voucher en pestaña nueva"
+                        >
+                          <Eye size={12} /> Ver Voucher ↗
+                        </a>
+                      ) : (
+                        <span style={{ fontSize: '0.72rem', color: '#6b7280', display: 'block', marginTop: '2px' }}>
+                          Sin voucher
+                        </span>
+                      )}
                     </td>
                     <td>
                       <span className="order-total-price">
@@ -122,8 +148,10 @@ export default function OrdersView({ orders, onUpdateOrderStatus }) {
                         rel="noreferrer"
                         className="btn-action-whatsapp"
                         title="Contactar al cliente por WhatsApp"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                       >
-                        💬 WhatsApp
+                        <MessageSquare size={13} />
+                        <span>WhatsApp</span>
                       </a>
                     </td>
                   </tr>

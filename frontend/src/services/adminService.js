@@ -120,6 +120,7 @@ export const adminService = {
               minute: '2-digit',
             }),
             paymentMethod: o.metodo_pago,
+            comprobanteUrl: o.comprobante_pago_url || null,
             items: [],
           }))
           saveToStorage('orders', mappedOrders)
